@@ -7,6 +7,7 @@ copy /Y "C:\Users\user\.claude\commands\x-analytics.md" . 2>nul
 copy /Y "C:\Users\user\.claude\commands\wp-sedori.md" . 2>nul
 copy /Y "C:\Users\user\.claude\commands\anti-ai-writing.md" . 2>nul
 copy /Y "C:\Users\user\.claude\commands\infographic.md" . 2>nul
+copy /Y "C:\Users\user\.claude\commands\blog-publish.md" . 2>nul
 copy /Y "C:\Users\user\affiliate-project-strategy.md" .
 
 REM Git add, commit, push
