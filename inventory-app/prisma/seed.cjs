@@ -271,6 +271,56 @@ async function main() {
     },
   });
 
+  // Default Dashboard Widgets
+  await prisma.dashboardWidget.create({
+    data: {
+      type: "single_value",
+      period: "monthly",
+      periodRange: "current",
+      metric: "profit",
+      dateField: "completionDate",
+      tradingStatus: "completed",
+      showComparison: false,
+      sortOrder: 0,
+    },
+  });
+  await prisma.dashboardWidget.create({
+    data: {
+      type: "bar_chart",
+      period: "daily",
+      periodRange: "current",
+      metric: "profit",
+      dateField: "completionDate",
+      tradingStatus: "completed",
+      showComparison: false,
+      sortOrder: 1,
+    },
+  });
+  await prisma.dashboardWidget.create({
+    data: {
+      type: "bar_chart",
+      period: "monthly",
+      periodRange: "current",
+      metric: "profit",
+      dateField: "completionDate",
+      tradingStatus: "completed",
+      showComparison: false,
+      sortOrder: 2,
+    },
+  });
+  await prisma.dashboardWidget.create({
+    data: {
+      type: "bar_chart",
+      period: "monthly",
+      periodRange: "current",
+      metric: "product_count",
+      dateField: "completionDate",
+      tradingStatus: "completed",
+      showComparison: false,
+      sortOrder: 3,
+    },
+  });
+
   console.log("Seed data created successfully!");
 }
 
