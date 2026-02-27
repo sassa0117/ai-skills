@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Platform {
+  id             String    @id @default(cuid())
+  name           String
+  commissionRate Float     @default(0)
+  createdAt      DateTime  @default(now())
+  products       Product[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String
+  createdAt DateTime     @default(now())
+  products  ProductTag[]
+}
+
+model ProductTag {
+  productId String
+  tagId     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+}
+
+model Supplier {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model PaymentMethod {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id              String    @id @default(cuid())
+  name            String
+  code            String?
+  coverImage      String?
+  images          String?   // JSON array of image URLs
+  sellingPrice    Float     @default(0)
+  purchasePrice   Float     @default(0)
+  shippingIncome  Float     @default(0) // 送料（購入者負担分）
+  shippingCost    Float     @default(0) // 送料
+  packagingCost   Float     @default(0) // 梱包費
+  commission      Float     @default(0) // 手数料（優先）
+  commissionRate  Float?    // 手数料率（プラットフォームのデフォルト）
+  status          String    @default("active") // active, archived
+  tradingStatus   String    @default("before_listing") // before_listing, listing, sold, shipped, completed, cancelled
+  purchaseDate    DateTime?
+  listingDate     DateTime?
+  paymentDate     DateTime?
+  shippingDate    DateTime?
+  completionDate  DateTime?
+  memo            String?
+  invoiceNumber   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  platformId      String?
+  platform        Platform?      @relation(fields: [platformId], references: [id])
+  categoryId      String?
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  supplierId      String?
+  supplier        Supplier?      @relation(fields: [supplierId], references: [id])
+  paymentMethodId String?
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  tags            ProductTag[]
+}
+
+model Expense {
+  id         String   @id @default(cuid())
+  date       DateTime
+  amount     Float
+  memo       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  categoryId String?
+  category   ExpenseCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model ExpenseCategory {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  expenses  Expense[]
+}
+
+model DashboardWidget {
+  id          String @id @default(cuid())
+  type        String // single_value, bar_chart
+  period      String // daily, monthly
+  metric      String // profit, sales, product_count
+  filter      String @default("completed") // completed, all
+  sortOrder   Int    @default(0)
+  createdAt   DateTime @default(now())
+}
