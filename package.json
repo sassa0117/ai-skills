@@ -1,10 +1,12 @@
 {
   "name": "ai-skills",
   "version": "1.0.0",
-  "description": "",
+  "description": "さっさのスキル・自動化ツール統合リポジトリ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "screenshot": "node scripts/screenshot.js",
+    "wp-post": "node scripts/wp-post.js",
+    "publish": "node scripts/publish.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,7 @@
   },
   "homepage": "https://github.com/sassa0117/ai-skills#readme",
   "dependencies": {
-    "chokidar": "^5.0.0"
+    "chokidar": "^5.0.0",
+    "puppeteer": "^24.0.0"
   }
 }
