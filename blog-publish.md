@@ -47,12 +47,12 @@
 
 ```bash
 export PATH="/c/Program Files/nodejs:$PATH"
-cd "C:/Users/user/ai-skills"
+cd "C:/Users/user/sedori-automation"
 node scripts/screenshot.js "C:\Users\user\Desktop\図解1_xxx.html"
 node scripts/screenshot.js "C:\Users\user\Desktop\図解2_xxx.html"
 ```
 
-出力先：`C:\Users\user\ai-skills\output\`
+出力先：`C:\Users\user\sedori-automation\output\`
 
 ### STEP 4: WordPress投稿
 
@@ -60,7 +60,7 @@ node scripts/screenshot.js "C:\Users\user\Desktop\図解2_xxx.html"
 
 ```bash
 export PATH="/c/Program Files/nodejs:$PATH"
-cd "C:/Users/user/ai-skills"
+cd "C:/Users/user/sedori-automation"
 node scripts/wp-post.js "C:\Users\user\Desktop\article_temp.html" --title "記事タイトル" --status draft --type post --image output/図解1_xxx.png --image output/図解2_xxx.png
 ```
 
@@ -75,7 +75,11 @@ node scripts/wp-post.js "C:\Users\user\Desktop\article_temp.html" --title "記�
 
 ## 前提条件
 
-- `C:\Users\user\ai-skills\.env` にWordPress認証情報が設定済みであること（設定済み）
+- `C:\Users\user\sedori-automation\.env` にWordPress認証情報が設定済みであること
+- 未設定の場合はエラーメッセージが出るので、設定手順を案内する：
+  1. WordPress管理画面 → ユーザー → プロフィール
+  2. アプリケーションパスワードで「sedori-automation」と入力して生成
+  3. `.env.example` をコピーして `.env` を作成し、認証情報を入力
 
 ## 注意事項
 

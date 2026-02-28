@@ -23,6 +23,9 @@ export default function ProductForm({ product, onSubmit }: ProductFormProps) {
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [platformId, setPlatformId] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [supplierId, setSupplierId] = useState("");
@@ -81,6 +84,14 @@ export default function ProductForm({ product, onSubmit }: ProductFormProps) {
       setPaymentDate(formatDateForInput(product.paymentDate as string));
       setShippingDate(formatDateForInput(product.shippingDate as string));
       setCompletionDate(formatDateForInput(product.completionDate as string));
+      setCoverImage((product.coverImage as string) || null);
+      if (product.images) {
+        try {
+          setImages(JSON.parse(product.images as string));
+        } catch {
+          setImages([]);
+        }
+      }
       setMemo((product.memo as string) || "");
       setInvoiceNumber((product.invoiceNumber as string) || "");
       if (product.tags && Array.isArray(product.tags)) {
@@ -108,6 +119,40 @@ export default function ProductForm({ product, onSubmit }: ProductFormProps) {
     }
   }, [platformId, platforms]);
 
+  const uploadFiles = async (files: FileList): Promise<string[]> => {
+    const formData = new FormData();
+    Array.from(files).forEach((f) => formData.append("files", f));
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const json = await res.json();
+    return json.urls || [];
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    setUploading(true);
+    try {
+      const urls = await uploadFiles(e.target.files);
+      if (urls[0]) setCoverImage(urls[0]);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    setUploading(true);
+    try {
+      const urls = await uploadFiles(e.target.files);
+      setImages((prev) => [...prev, ...urls]);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const income = sellingPrice + shippingIncome;
   const expense = purchasePrice + shippingCost + packagingCost + commission;
   const profit = income - expense;
@@ -119,6 +164,8 @@ export default function ProductForm({ product, onSubmit }: ProductFormProps) {
     onSubmit({
       name,
       code: code || null,
+      coverImage: coverImage || null,
+      images: images.length > 0 ? JSON.stringify(images) : null,
       platformId: platformId || null,
       categoryId: categoryId || null,
       supplierId: supplierId || null,
@@ -178,6 +225,109 @@ export default function ProductForm({ product, onSubmit }: ProductFormProps) {
             className={inputClass}
           />
         </div>
+      </div>
+
+      {/* Images */}
+      <div className="bg-white rounded-xl shadow-sm p-4 space-y-4">
+        <h2 className="font-medium text-sm text-gray-800">商品画像</h2>
+
+        {/* Cover Image */}
+        <div>
+          <label className={labelClass}>カバー画像</label>
+          <div className="flex items-start gap-3">
+            <div className="w-24 h-24 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden relative">
+              {coverImage ? (
+                <>
+                  <img src={coverImage} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setCoverImage(null)}
+                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
+                  >
+                    ×
+                  </button>
+                </>
+              ) : (
+                <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center text-gray-400">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-xs mt-1">追加</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+            {coverImage && (
+              <label className="cursor-pointer text-xs text-indigo-500 mt-2">
+                変更
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+        </div>
+
+        {/* Additional Images */}
+        <div>
+          <label className={labelClass}>追加画像</label>
+          <div className="flex flex-wrap gap-2">
+            {images.map((url, i) => (
+              <div key={i} className="w-20 h-20 relative rounded-lg overflow-hidden border">
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {Array.from({ length: Math.max(0, 3 - images.length) }).map((_, i) => (
+              <label key={`empty-${i}`} className="w-20 h-20 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer flex flex-col items-center justify-center text-gray-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-xs mt-0.5">追加</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImagesUpload}
+                  className="hidden"
+                />
+              </label>
+            ))}
+            {images.length >= 3 && (
+            <label className="w-20 h-20 bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer flex flex-col items-center justify-center text-gray-400">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="text-xs mt-0.5">追加</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImagesUpload}
+                className="hidden"
+              />
+            </label>
+            )}
+          </div>
+        </div>
+
+        {uploading && (
+          <p className="text-xs text-indigo-500">アップロード中...</p>
+        )}
       </div>
 
       {/* Product Info */}

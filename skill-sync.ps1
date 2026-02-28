@@ -1,10 +1,10 @@
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $global:watcherProcess = $null
 $global:isRunning = $false
 
-# === トレイアイコン作成 ===
 $notifyIcon = New-Object System.Windows.Forms.NotifyIcon
 $notifyIcon.Visible = $true
 
@@ -40,7 +40,7 @@ function Start-Watcher {
     $global:watcherProcess = [System.Diagnostics.Process]::Start($si)
     $global:isRunning = $true
     Set-IconOn
-    $toggleItem.Text = "● 同期ON（クリックでOFF）"
+    $toggleItem.Text = "Sync ON (click to OFF)"
 }
 
 function Stop-Watcher {
@@ -51,28 +51,32 @@ function Stop-Watcher {
     $global:watcherProcess = $null
     $global:isRunning = $false
     Set-IconOff
-    $toggleItem.Text = "○ 同期OFF（クリックでON）"
+    $toggleItem.Text = "Sync OFF (click to ON)"
 }
 
-# === メニュー ===
 $contextMenu = New-Object System.Windows.Forms.ContextMenuStrip
 
 $toggleItem = New-Object System.Windows.Forms.ToolStripMenuItem
-$toggleItem.Text = "● 同期ON（クリックでOFF）"
+$toggleItem.Text = "Sync ON (click to OFF)"
 $toggleItem.Add_Click({
     if ($global:isRunning) { Stop-Watcher } else { Start-Watcher }
 })
 
 $syncNowItem = New-Object System.Windows.Forms.ToolStripMenuItem
-$syncNowItem.Text = "今すぐ同期"
+$syncNowItem.Text = "Sync Now"
 $syncNowItem.Add_Click({
-    Set-Location "C:\Users\user\ai-skills"
-    & node -e "require('./watcher.js')" 2>$null
-    Start-Process -NoNewWindow -FilePath "node" -ArgumentList "-e `"const w = require('./watcher.js')`"" -WorkingDirectory "C:\Users\user\ai-skills"
+    $si2 = New-Object System.Diagnostics.ProcessStartInfo
+    $si2.FileName = "node"
+    $si2.Arguments = "-e `"const fs=require('fs');const path=require('path');const{execSync}=require('child_process');const W=path.join(process.env.USERPROFILE,'.claude','commands');const R=path.join(process.env.USERPROFILE,'ai-skills');fs.readdirSync(W).filter(f=>f.endsWith('.md')).forEach(f=>{fs.copyFileSync(path.join(W,f),path.join(R,f))});execSync('git add -A',{cwd:R});try{execSync('git commit -m auto-sync',{cwd:R});execSync('git push',{cwd:R})}catch(e){}`""
+    $si2.WorkingDirectory = "C:\Users\user\ai-skills"
+    $si2.WindowStyle = "Hidden"
+    $si2.CreateNoWindow = $true
+    $si2.UseShellExecute = $false
+    [System.Diagnostics.Process]::Start($si2)
 })
 
 $exitItem = New-Object System.Windows.Forms.ToolStripMenuItem
-$exitItem.Text = "終了"
+$exitItem.Text = "Exit"
 $exitItem.Add_Click({
     Stop-Watcher
     $notifyIcon.Visible = $false
@@ -82,17 +86,16 @@ $exitItem.Add_Click({
 
 $contextMenu.Items.Add($toggleItem) | Out-Null
 $contextMenu.Items.Add($syncNowItem) | Out-Null
-$contextMenu.Items.Add("-") | Out-Null
+$sep = New-Object System.Windows.Forms.ToolStripSeparator
+$contextMenu.Items.Add($sep) | Out-Null
 $contextMenu.Items.Add($exitItem) | Out-Null
 
 $notifyIcon.ContextMenuStrip = $contextMenu
 
-# ダブルクリックでトグル
 $notifyIcon.Add_DoubleClick({
     if ($global:isRunning) { Stop-Watcher } else { Start-Watcher }
 })
 
-# === 起動 ===
 Start-Watcher
 
 [System.Windows.Forms.Application]::Run()

@@ -108,11 +108,15 @@ model ExpenseCategory {
 }
 
 model DashboardWidget {
-  id          String @id @default(cuid())
-  type        String // single_value, bar_chart
-  period      String // daily, monthly
-  metric      String // profit, sales, product_count
-  filter      String @default("completed") // completed, all
-  sortOrder   Int    @default(0)
-  createdAt   DateTime @default(now())
+  id             String  @id @default(cuid())
+  type           String  // single_value, bar_chart
+  period         String  // daily, monthly, yearly
+  periodRange    String  @default("current") // current, recent
+  recentCount    Int     @default(12)
+  metric         String  // profit, sales, total_cost, commission, purchase, shipping, packaging, profit_rate, product_count
+  dateField      String  @default("completionDate") // purchaseDate, listingDate, paymentDate, shippingDate, completionDate
+  tradingStatus  String  @default("completed") // all, before_listing, listing, sold, shipped, completed, cancelled
+  showComparison Boolean @default(false)
+  sortOrder      Int     @default(0)
+  createdAt      DateTime @default(now())
 }

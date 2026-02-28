@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// IP作品マスタ（ポケモン=S, ハンター=A, ダンガンロンパ=B, 特撮=C）
+model IpFranchise {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  tier      String   // S, A, B, C
+  romBase   String?  // "数千万", "数百万" etc.
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+  keywords  IpKeyword[]
+}
+
+// IP自動判定用キーワード
+model IpKeyword {
+  id          String      @id @default(cuid())
+  keyword     String      @unique
+  franchiseId String
+  franchise   IpFranchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+}
+
+// ポスト（過去の分析データ + 下書き）
+model Post {
+  id              String    @id @default(cuid())
+  postUrl         String?   @unique
+  postDate        DateTime?
+
+  // 分析データ（x-analyticsの16カラム）
+  impressions     Int       @default(0)
+  likes           Int       @default(0)
+  replies         Int       @default(0)
+  reposts         Int       @default(0)
+  profileClicks   Int       @default(0)
+  linkClicks      Int       @default(0)
+  followerDelta   Int       @default(0)
+  engagementRate  Float     @default(0)
+  videoViews      Int       @default(0)
+  bookmarks       Int       @default(0)
+  shares          Int       @default(0)
+
+  // コンテンツ
+  content         String
+  supplement      String?
+  imageUrls       String?   // JSON array
+
+  // 分類
+  progressionType String?   // initial, delayed, dual_peak, ultra_initial, low, sustained
+  postType        String?   // mega_buzz, mid_tier, quote_rt, self_reply
+  algorithmEra    String?   // pre_grok, grok_transition, grok_full
+
+  // 商品情報
+  productName     String?
+  buyPrice        Float?
+  sellPrice       Float?
+  sourceStore     String?
+  priceDiffRatio  Float?
+
+  // IP紐付け
+  franchiseId     String?
+  franchise       IpFranchise? @relation(fields: [franchiseId], references: [id])
+
+  // リライト
+  isRewrite       Boolean   @default(false)
+  originalPostId  String?
+  originalPost    Post?     @relation("RewriteChain", fields: [originalPostId], references: [id])
+  rewrites        Post[]    @relation("RewriteChain")
+  rewriteNotes    String?
+
+  // ステータス
+  status          String    @default("published") // draft, published, archived
+
+  // 計算値
+  bookmarkRate    Float?
+  isRewriteCandidate Boolean @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  phrasesUsed     PostPhrase[]
+
+  @@index([postDate])
+  @@index([impressions])
+  @@index([franchiseId])
+  @@index([algorithmEra])
+  @@index([status])
+}
+
+// 自分事化フレーズ
+model Phrase {
+  id          String       @id @default(cuid())
+  text        String       @unique
+  effect      String?
+  bestResult  String?
+  category    String?      // self_relevance, nostalgia, urgency, surprise
+  createdAt   DateTime     @default(now())
+  posts       PostPhrase[]
+}
+
+model PostPhrase {
+  postId    String
+  phraseId  String
+  post      Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  phrase    Phrase @relation(fields: [phraseId], references: [id], onDelete: Cascade)
+
+  @@id([postId, phraseId])
+}
+
+// NGパターン
+model NgPattern {
+  id          String  @id @default(cuid())
+  pattern     String
+  reason      String
+  suggestion  String?
+  example     String?
+  severity    String  @default("warning") // warning, error
+  createdAt   DateTime @default(now())
+}
+
+// ポストテンプレート
+model PostTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  template    String
+  postType    String   // mega_buzz, mid_tier, quote_rt, self_reply
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}

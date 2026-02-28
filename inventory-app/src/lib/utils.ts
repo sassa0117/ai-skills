@@ -68,6 +68,43 @@ export function calcProfit(product: {
   return { income, expense, profit, profitRate, costRate };
 }
 
+// Widget config labels
+export const WIDGET_TYPE_LABELS: Record<string, string> = {
+  single_value: "単一数値表示",
+  bar_chart: "棒グラフ表示",
+};
+
+export const WIDGET_PERIOD_LABELS: Record<string, string> = {
+  daily: "日ごと",
+  monthly: "月ごと",
+  yearly: "年ごと",
+};
+
+export const WIDGET_PERIOD_RANGE_LABELS: Record<string, string> = {
+  current: "現在の期間",
+  recent: "直近期間",
+};
+
+export const WIDGET_METRIC_LABELS: Record<string, string> = {
+  profit: "利益",
+  sales: "販売額（売上）",
+  total_cost: "総原価",
+  commission: "販売手数料",
+  purchase: "仕入額",
+  shipping: "送料",
+  packaging: "梱包費",
+  profit_rate: "利益率",
+  product_count: "商品数",
+};
+
+export const WIDGET_DATE_FIELD_LABELS: Record<string, string> = {
+  purchaseDate: "仕入日",
+  listingDate: "出品日",
+  paymentDate: "入金日",
+  shippingDate: "発送日",
+  completionDate: "取引完了日",
+};
+
 export function daysBetween(
   from: Date | string | null,
   to: Date | string | null
