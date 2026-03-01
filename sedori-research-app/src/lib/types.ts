@@ -46,6 +46,10 @@ export interface ResearchResult {
   product: {
     name: string;
     identifiedBy: "keyword" | "image";
+    searchKeyword?: string;
+    category?: string;
+    modelNumber?: string;
+    confidence?: "high" | "medium" | "low";
   };
   prices: ScrapingResult;
   summary: PriceSummary;
