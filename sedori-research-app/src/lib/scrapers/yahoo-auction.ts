@@ -46,24 +46,33 @@ export async function searchYahooAuctionClosed(
     const $ = cheerio.load(html);
     const results: PriceResult[] = [];
 
+    // デバッグ: .Productが見つからない場合はHTMLの先頭をログ出力
+    const productCount = $(".Product").length;
+    if (productCount === 0) {
+      console.warn(
+        "Yahoo Auction: 0 .Product elements found. HTML starts with:",
+        html.slice(0, 500)
+      );
+    }
+
     $(".Product").each((_, el) => {
       const $el = $(el);
-      const name =
-        $el.find(".Product__titleLink").text().trim() ||
-        $el.find("a[data-auction-title]").text().trim();
-      const priceText =
-        $el.find(".Product__priceValue").text().trim() ||
-        $el.find(".Product__price .u-textRed").text().trim();
+      const name = $el.find(".Product__titleLink").text().trim();
+
+      // .first() で落札価格のみ取得（開始価格と混ざるのを防ぐ）
+      const priceText = $el
+        .find(".Product__priceValue")
+        .first()
+        .text()
+        .trim();
       const price = parseInt(priceText.replace(/[^0-9]/g, ""), 10);
-      const href =
-        $el.find(".Product__titleLink").attr("href") ||
-        $el.find("a[data-auction-title]").attr("href") ||
-        "";
+
+      const href = $el.find(".Product__titleLink").attr("href") || "";
       const bidsText = $el.find(".Product__bid").text().trim();
       const bids = parseInt(bidsText.replace(/[^0-9]/g, ""), 10) || 0;
       const dateText = $el.find(".Product__time").text().trim();
 
-      if (name && !isNaN(price)) {
+      if (name && !isNaN(price) && price > 0) {
         results.push({
           name,
           price,
