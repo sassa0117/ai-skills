@@ -18,6 +18,7 @@ model IpFranchise {
   updatedAt DateTime @updatedAt
   posts     Post[]
   keywords  IpKeyword[]
+  stocks    ProductStock[]
 }
 
 // IP自動判定用キーワード
@@ -123,6 +124,24 @@ model NgPattern {
   example     String?
   severity    String  @default("warning") // warning, error
   createdAt   DateTime @default(now())
+}
+
+// 商材ストック（メルカリ等で見つけた面白い商品）
+model ProductStock {
+  id          String       @id @default(cuid())
+  productName String
+  buyPrice    Int?
+  sellPrice   Int?
+  sourceUrl   String?
+  memo        String
+  imageUrl    String?
+  franchiseId String?
+  franchise   IpFranchise? @relation(fields: [franchiseId], references: [id])
+  used        Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+
+  @@index([used])
+  @@index([franchiseId])
 }
 
 // ポストテンプレート

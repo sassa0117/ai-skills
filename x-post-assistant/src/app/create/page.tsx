@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IP_TIERS, PRICE_DIFF_TIERS } from "@/lib/constants";
 import type { NgCheckResult } from "@/lib/ng-checker";
+import type { Recommendation } from "@/lib/analyzer";
 
 interface DetectedIp {
   franchiseId: string;
@@ -24,12 +25,28 @@ export default function CreatePage() {
   const [sellPrice, setSellPrice] = useState("");
   const [sourceStore, setSourceStore] = useState("");
   const [postType, setPostType] = useState("");
+  const [todayRecs, setTodayRecs] = useState<Recommendation[]>([]);
   const [variations, setVariations] = useState<Variation[]>([]);
   const [detectedIp, setDetectedIp] = useState<DetectedIp | null>(null);
   const [priceDiffRatio, setPriceDiffRatio] = useState(0);
   const [loading, setLoading] = useState(false);
   const [ngResults, setNgResults] = useState<Record<number, NgCheckResult>>({});
   const [copied, setCopied] = useState<number | null>(null);
+
+  // おすすめを取得
+  useEffect(() => {
+    fetch("/api/recommendations")
+      .then((r) => r.json())
+      .then((data) => {
+        // 上位3件の高優先度おすすめのみ
+        setTodayRecs(
+          (data.recommendations || [])
+            .filter((r: Recommendation) => r.priority === "high" || r.suggestedIp)
+            .slice(0, 3)
+        );
+      })
+      .catch(console.error);
+  }, []);
 
   const handleGenerate = async () => {
     if (!productName) return;
@@ -81,6 +98,23 @@ export default function CreatePage() {
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-xl font-bold">ポスト作成</h1>
+
+      {/* 今日のおすすめバナー */}
+      {todayRecs.length > 0 && (
+        <div className="bg-gradient-to-r from-[#1d9bf0]/10 to-[#1d9bf0]/5 rounded-xl p-3 space-y-2">
+          <p className="text-xs font-bold text-[#1d9bf0]">今日のおすすめ</p>
+          {todayRecs.map((rec, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs">
+              <span className={`shrink-0 px-1.5 py-0.5 rounded font-bold ${
+                rec.priority === "high" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"
+              }`}>
+                {rec.type === "ip_rotation" ? "IP" : rec.type === "post_type" ? "タイプ" : rec.type === "frequency" ? "頻度" : "推奨"}
+              </span>
+              <span className="text-gray-700">{rec.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* 入力フォーム */}
       <div className="bg-white rounded-xl shadow-sm p-4 space-y-3">
@@ -208,7 +242,7 @@ export default function CreatePage() {
                   <div className="w-8 h-8 rounded-full bg-[#1d9bf0] flex items-center justify-center text-white text-xs font-bold">さ</div>
                   <div>
                     <p className="text-xs font-bold">さっさ</p>
-                    <p className="text-xs text-gray-400">@sassa_sedori</p>
+                    <p className="text-xs text-gray-400">@sassasedori</p>
                   </div>
                 </div>
                 <p className="text-sm whitespace-pre-wrap">{v.text}</p>

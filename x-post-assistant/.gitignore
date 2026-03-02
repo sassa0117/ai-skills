@@ -44,3 +44,9 @@ next-env.d.ts
 # prisma
 prisma/dev.db
 prisma/dev.db-journal
+
+# scraping
+.x-cookies.json
+scraped-posts.json
+.scraper-chrome-profile/
+debug-screenshot.png
