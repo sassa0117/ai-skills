@@ -28,6 +28,8 @@ export default function StockPage() {
     memo: "",
   });
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     loadStocks();
@@ -41,10 +43,32 @@ export default function StockPage() {
     setLoading(false);
   }
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  function clearImage() {
+    setImageFile(null);
+    setImagePreview(null);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
+      // 画像アップロード
+      let imageUrl: string | null = null;
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("file", imageFile);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.imageUrl;
+      }
+
       await fetch("/api/stock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,9 +78,11 @@ export default function StockPage() {
           sellPrice: form.sellPrice ? parseInt(form.sellPrice) : null,
           sourceUrl: form.sourceUrl || null,
           memo: form.memo,
+          imageUrl,
         }),
       });
       setForm({ productName: "", buyPrice: "", sellPrice: "", sourceUrl: "", memo: "" });
+      clearImage();
       setShowForm(false);
       loadStocks();
     } catch (err) {
@@ -119,6 +145,38 @@ export default function StockPage() {
             rows={3}
             className="w-full border rounded-lg px-3 py-2 text-sm"
           />
+
+          {/* 画像アップロード */}
+          {imagePreview ? (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-48 object-contain bg-gray-50 rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={clearImage}
+                className="absolute top-2 right-2 bg-black/60 text-white w-7 h-7 rounded-full text-sm flex items-center justify-center"
+              >
+                x
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#1d9bf0] transition-colors">
+              <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+              </svg>
+              <span className="text-xs text-gray-500">スクショをアップロード</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </label>
+          )}
+
           <button
             type="submit"
             disabled={saving}
@@ -170,6 +228,13 @@ export default function StockPage() {
                 stock.used ? "opacity-60" : ""
               }`}
             >
+              {stock.imageUrl && (
+                <img
+                  src={stock.imageUrl}
+                  alt={stock.productName}
+                  className="w-full h-40 object-contain bg-gray-50 rounded-lg mb-2"
+                />
+              )}
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-bold">{stock.productName}</span>
                 {stock.franchise && (

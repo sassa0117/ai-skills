@@ -28,12 +28,46 @@ export async function GET() {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
+  // 同じIPで最近（3ヶ月以内）投稿があるIP → リメイク済みとみなす
+  const recentPostsByFranchise = new Set<string>();
+  for (const p of posts) {
+    if (p.franchiseId && p.postDate && new Date(p.postDate) >= threeMonthsAgo) {
+      recentPostsByFranchise.add(p.franchiseId);
+    }
+  }
+
+  // 内容の類似チェック用: 最近のポストのキーワード
+  const recentContentWords = posts
+    .filter((p) => p.postDate && new Date(p.postDate) >= threeMonthsAgo)
+    .map((p) => p.content.toLowerCase());
+
+  function isLikelyRemade(oldPost: typeof posts[0]): boolean {
+    // 同じIPで最近のポストがあればリメイク済み
+    if (oldPost.franchiseId && recentPostsByFranchise.has(oldPost.franchiseId)) {
+      return true;
+    }
+    // IPなしでも、本文から主要キーワード（商品名等）を抽出して類似チェック
+    const keywords = oldPost.content
+      .replace(/[！!？?。、\n\r]/g, " ")
+      .split(/\s+/)
+      .filter((w) => w.length >= 3)
+      .slice(0, 5);
+    if (keywords.length > 0) {
+      for (const recent of recentContentWords) {
+        const matchCount = keywords.filter((kw) => recent.includes(kw.toLowerCase())).length;
+        if (matchCount >= 2) return true;
+      }
+    }
+    return false;
+  }
+
   const remakeCandidates = posts
     .filter(
       (p) =>
         p.postDate &&
         new Date(p.postDate) < threeMonthsAgo &&
-        p.impressions > 5000
+        p.impressions > 5000 &&
+        !isLikelyRemade(p)
     )
     .sort((a, b) => b.impressions - a.impressions)
     .slice(0, 5)

@@ -50,3 +50,7 @@ prisma/dev.db-journal
 scraped-posts.json
 .scraper-chrome-profile/
 debug-screenshot.png
+debug-phase2-*.png
+
+# uploads
+public/uploads/
