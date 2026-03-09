@@ -1,0 +1,14 @@
+{
+  "name": "content-engine",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "generate": "node src/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "dotenv": "^16.0.0",
+    "node-html-parser": "^6.0.0"
+  }
+}
