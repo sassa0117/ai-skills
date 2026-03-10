@@ -9,6 +9,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "latest",
     "dotenv": "^16.0.0",
-    "node-html-parser": "^6.0.0"
+    "node-html-parser": "^6.0.0",
+    "puppeteer": "^24.38.0"
   }
 }

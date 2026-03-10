@@ -6,6 +6,7 @@ import { transform, antiAiCheck } from "./transform/engine.js";
 import { writeOutput } from "./output/writer.js";
 import { openPreview } from "./output/preview.js";
 import { createProfile, PLATFORMS, validateApiKey } from "./config.js";
+import { generateVideo } from "./video/index.js";
 
 // --- プラットフォームモジュール動的読み込み ---
 async function loadPlatform(name) {
@@ -23,6 +24,7 @@ function parseCLIArgs() {
       persona: { type: "string" },
       preview: { type: "boolean", default: false },
       "no-ai-check": { type: "boolean", default: false },
+      "skip-video": { type: "boolean", default: false },
       help: { type: "boolean", short: "h", default: false },
     },
     strict: false,
@@ -54,6 +56,7 @@ function parseCLIArgs() {
     persona: values.persona || null,
     preview: values.preview || false,
     skipAiCheck: values["no-ai-check"] || false,
+    skipVideo: values["skip-video"] || false,
   };
 }
 
@@ -76,6 +79,7 @@ Content Engine - ブログ記事 → SNS最適化コンテンツ変換
   --persona        ペルソナ上書き（デフォルト: さっさ）
   --preview        生成後にブラウザプレビューを開く
   --no-ai-check    AI臭チェックをスキップ
+  --skip-video     YouTube台本のみ生成（スライド画像・動画合成をスキップ）
   --help, -h       このヘルプを表示
 
 例:
@@ -138,6 +142,8 @@ async function main() {
 
   const results = {};
 
+  let videoResult = null; // YouTube動画パイプラインの結果
+
   for (const platformName of args.platforms) {
     process.stdout.write(`  ${platformName}... `);
 
@@ -154,8 +160,8 @@ async function main() {
         profile,
       });
 
-      // AI臭チェック（オプション）
-      if (!args.skipAiCheck) {
+      // YouTube以外はAI臭チェック（YouTubeはJSON出力なのでスキップ）
+      if (!args.skipAiCheck && platformName !== "youtube") {
         process.stdout.write("(AI臭チェック中...) ");
         text = await antiAiCheck(text, platform.label || platformName);
       }
@@ -167,6 +173,25 @@ async function main() {
       };
 
       console.log(`OK (${text.length}文字)`);
+
+      // YouTube: 台本生成後にスライド画像→動画合成パイプライン実行
+      if (platformName === "youtube") {
+        console.log(`\n  YouTube動画パイプライン開始...`);
+        try {
+          videoResult = await generateVideo({
+            scriptText: text,
+            skipVideo: args.skipVideo,
+          });
+          console.log(`  YouTube動画パイプライン完了`);
+          if (videoResult.videoPath) {
+            console.log(`  動画: ${videoResult.videoPath}`);
+          }
+          console.log(`  スライド画像: ${videoResult.slidePaths.length}枚`);
+        } catch (videoErr) {
+          console.error(`  [WARN] 動画生成でエラー: ${videoErr.message}`);
+          console.error(`  台本JSONは正常に出力されています。`);
+        }
+      }
     } catch (err) {
       console.log(`FAILED`);
       console.error(`    エラー: ${err.message}`);
@@ -180,7 +205,7 @@ async function main() {
 
   // 4. 出力
   console.log(`\n[4/4] ファイル出力中...`);
-  const outputPath = writeOutput({ title: sourceData.title, results });
+  const outputPath = writeOutput({ title: sourceData.title, results, videoResult });
   console.log(`  出力先: ${outputPath}`);
 
   // プレビュー
