@@ -1,0 +1,25 @@
+{
+  "id": "sassa",
+  "label": "さっさ（せどりブロガー）",
+  "genre": "せどり",
+  "persona": "さっさ",
+  "writingStyle": "sassa-writing",
+  "description": "電脳せどり＋店舗せどりのハイブリッドで稼ぐブロガー「さっさ」。メルカリショップ・ヤフオク・Yahoo!フリマで販売。",
+  "site": {
+    "url": "https://sedorisassa.com",
+    "wpUsername": "sassa"
+  },
+  "x": {
+    "username": "sassasedori",
+    "strategy": "x-strategy.md"
+  },
+  "platforms": {
+    "default": ["threads", "note", "x"],
+    "all": ["threads", "note", "x", "youtube"]
+  },
+  "skills": {
+    "writing": "sassa-writing.md",
+    "antiAi": "anti-ai-writing.md",
+    "xStrategy": "x-strategy.md"
+  }
+}

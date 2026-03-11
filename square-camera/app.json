@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "スクエアカメラ",
+    "slug": "square-camera",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "android": {
+      "package": "com.sassa0117.squarecamera",
+      "adaptiveIcon": {
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "スクエア撮影にカメラを使用します"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "撮影した写真をギャラリーに保存します",
+          "savePhotosPermission": "撮影した写真をギャラリーに保存します"
+        }
+      ]
+    ]
+  }
+}

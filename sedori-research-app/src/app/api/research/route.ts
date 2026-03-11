@@ -5,7 +5,7 @@ import { searchSurugaya } from "@/lib/scrapers/surugaya";
 import { searchMandarake } from "@/lib/scrapers/mandarake";
 import { searchLashinbang } from "@/lib/scrapers/lashinbang";
 import { analyzeWithClaude } from "@/lib/ai/claude";
-import { identifyProductFromImage } from "@/lib/ai/gemini";
+import { identifyProductFromImage } from "@/lib/ai/vision";
 import type { PriceSummary, ScrapingResult } from "@/lib/types";
 
 function calculateSummary(prices: number[]): PriceSummary {
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       imageMimeType?: string;
     };
 
-    // 画像がある場合はGeminiで商品特定
+    // 画像がある場合はVision API (Web Detection) で商品特定
     let searchKeyword = keyword || "";
     let identifiedBy: "keyword" | "image" = "keyword";
     let productIdentification = null;
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         searchKeyword = productIdentification.searchKeyword;
         identifiedBy = "image";
       } catch (error) {
-        console.error("Gemini image recognition failed:", error);
+        console.error("Vision API image recognition failed:", error);
         if (!keyword) {
           return NextResponse.json(
             { error: "画像認識に失敗しました。商品名を入力してください。" },
@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
           category: productIdentification.category,
           modelNumber: productIdentification.modelNumber,
           confidence: productIdentification.confidence,
+          webPages: productIdentification.webPages,
         }),
       },
       prices: scrapedData,

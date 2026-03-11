@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// タスク = Claude Codeに振る仕事の単位
+model Task {
+  id          String    @id @default(cuid())
+  title       String    // 「ブログ記事書いて」とかざっくり
+  prompt      String    // Claude Codeに渡す詳細指示
+  status      String    @default("pending") // pending, running, completed, failed, cancelled, needs_approval
+  priority    String    @default("normal") // low, normal, high, urgent
+  result      String?   // 最終成果物・まとめ
+  error       String?
+  workDir     String?   // 作業ディレクトリ
+  pid         Int?      // Claude Code プロセスID
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  logs        TaskLog[]
+  approvals   Approval[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+// タスクのリアルタイムログ
+model TaskLog {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  level     String   @default("info") // info, warn, error, tool_call, progress, output
+  message   String
+  metadata  String?  // JSON
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([level])
+  @@index([createdAt])
+}
+
+// 承認リクエスト = やばい操作の時だけ聞く
+model Approval {
+  id          String    @id @default(cuid())
+  taskId      String
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  action      String    // 何をしようとしているか
+  detail      String    // 詳細（ファイルパス、コマンド等）
+  risk        String    @default("medium") // low, medium, high, critical
+  status      String    @default("pending") // pending, approved, rejected
+  decidedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([taskId])
+  @@index([status])
+}
+
+// 通知ログ
+model Notification {
+  id        String   @id @default(cuid())
+  taskId    String?
+  type      String   // error, approval_needed, completed, warning
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+  @@index([createdAt])
+}
+
+// 設定
+model Config {
+  key   String @id
+  value String
+}

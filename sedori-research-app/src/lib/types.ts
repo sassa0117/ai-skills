@@ -50,6 +50,7 @@ export interface ResearchResult {
     category?: string;
     modelNumber?: string;
     confidence?: "high" | "medium" | "low";
+    webPages?: { title: string; url: string }[];
   };
   prices: ScrapingResult;
   summary: PriceSummary;

@@ -289,6 +289,22 @@ export default function Home() {
                     検索キーワード: &quot;{result.product.searchKeyword}&quot;
                   </p>
                 )}
+                {result.product.webPages && result.product.webPages.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-blue-100">
+                    <p className="text-xs text-blue-500 mb-1">一致したWebページ:</p>
+                    {result.product.webPages.slice(0, 3).map((page, i) => (
+                      <a
+                        key={i}
+                        href={page.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-xs text-blue-600 hover:underline truncate"
+                      >
+                        {page.title || page.url}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
