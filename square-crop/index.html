@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>スクエアクロップ</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+  color: #333;
+}
+.header {
+  background: #fff;
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.header h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+.header .count {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px;
+  justify-content: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn:active { opacity: 0.7; }
+.btn-primary {
+  background: #4A90D9;
+  color: #fff;
+}
+.btn-success {
+  background: #48BB78;
+  color: #fff;
+}
+.btn-success:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 8px;
+}
+.preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #ddd;
+}
+.preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.preview-item .order-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-item .remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-bar {
+  margin: 0 16px;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #48BB78;
+  transition: width 0.3s;
+  border-radius: 3px;
+}
+.progress-text {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin-top: 6px;
+  padding-bottom: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #aaa;
+}
+.empty-state .icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.empty-state p {
+  font-size: 15px;
+}
+
+input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>スクエアクロップ</h1>
+  <div class="count" id="countText"></div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="selectPhotos()">📷 写真を選択</button>
+  <button class="btn btn-success" id="cropBtn" onclick="cropAll()" disabled>✂️ 一括クロップ保存</button>
+</div>
+
+<div id="emptyState" class="empty-state">
+  <div class="icon">🖼️</div>
+  <p>写真を選択してください</p>
+</div>
+
+<div id="progressArea" style="display:none;">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText"></div>
+</div>
+
+<div class="preview-grid" id="previewGrid"></div>
+
+<input type="file" id="fileInput" accept="image/*" multiple>
+
+<script>
+// 選択された画像を順番通りに保持
+let selectedFiles = [];
+
+const fileInput = document.getElementById('fileInput');
+const previewGrid = document.getElementById('previewGrid');
+const emptyState = document.getElementById('emptyState');
+const cropBtn = document.getElementById('cropBtn');
+const countText = document.getElementById('countText');
+
+function selectPhotos() {
+  fileInput.click();
+}
+
+fileInput.addEventListener('change', (e) => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+
+  // 選択順を維持（ファイルAPIの返却順 = 選択順）
+  selectedFiles = files.map((file, i) => ({
+    file,
+    order: i,
+    name: file.name,
+    url: URL.createObjectURL(file)
+  }));
+
+  renderPreviews();
+  fileInput.value = '';
+});
+
+function renderPreviews() {
+  previewGrid.innerHTML = '';
+  emptyState.style.display = selectedFiles.length === 0 ? 'block' : 'none';
+  cropBtn.disabled = selectedFiles.length === 0;
+  countText.textContent = selectedFiles.length > 0 ? `${selectedFiles.length}枚選択中` : '';
+
+  selectedFiles.forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'preview-item';
+    div.innerHTML = `
+      <img src="${item.url}" alt="">
+      <div class="order-badge">${idx + 1}</div>
+      <button class="remove-btn" onclick="removeImage(${idx})">×</button>
+    `;
+    previewGrid.appendChild(div);
+  });
+}
+
+function removeImage(idx) {
+  URL.revokeObjectURL(selectedFiles[idx].url);
+  selectedFiles.splice(idx, 1);
+  renderPreviews();
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function cropToSquare(img) {
+  const canvas = document.createElement('canvas');
+  const size = Math.min(img.naturalWidth, img.naturalHeight);
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const ox = (img.naturalWidth - size) / 2;
+  const oy = (img.naturalHeight - size) / 2;
+  ctx.drawImage(img, ox, oy, size, size, 0, 0, size, size);
+  return canvas;
+}
+
+function canvasToBlob(canvas, quality) {
+  return new Promise(resolve => {
+    canvas.toBlob(resolve, 'image/jpeg', quality || 0.92);
+  });
+}
+
+async function cropAll() {
+  if (selectedFiles.length === 0) return;
+
+  cropBtn.disabled = true;
+  const progressArea = document.getElementById('progressArea');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  progressArea.style.display = 'block';
+
+  // 順番通りに処理
+  for (let i = 0; i < selectedFiles.length; i++) {
+    progressFill.style.width = `${((i) / selectedFiles.length) * 100}%`;
+    progressText.textContent = `処理中... ${i + 1} / ${selectedFiles.length}`;
+
+    const item = selectedFiles[i];
+    const img = await loadImage(item.file);
+    const canvas = cropToSquare(img);
+    const blob = await canvasToBlob(canvas);
+
+    // 順番を保証するファイル名: 001_元の名前.jpg
+    const prefix = String(i + 1).padStart(3, '0');
+    const baseName = item.name.replace(/\.[^.]+$/, '');
+    const fileName = `${prefix}_${baseName}.jpg`;
+
+    // ダウンロード
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(img.src);
+
+    // 連続ダウンロードの間隔（ブラウザが詰まらないように）
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  progressFill.style.width = '100%';
+  progressText.textContent = `完了！ ${selectedFiles.length}枚保存しました`;
+  cropBtn.disabled = false;
+}
+</script>
+
+</body>
+</html>

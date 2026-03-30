@@ -78,6 +78,7 @@ model Post {
 
   // ステータス
   status          String    @default("published") // draft, published, archived
+  scheduledAt     DateTime? // 投稿予定日時
 
   // 計算値
   bookmarkRate    Float?
@@ -93,6 +94,7 @@ model Post {
   @@index([franchiseId])
   @@index([algorithmEra])
   @@index([status])
+  @@index([scheduledAt])
 }
 
 // 自分事化フレーズ

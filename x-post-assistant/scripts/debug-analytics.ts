@@ -77,7 +77,7 @@ async function main() {
   for (let i = 0; i < 15; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     const metrics = await page.evaluate(EXTRACT_ANALYTICS);
-    const hasData = Object.values(metrics).some((v: any) => v !== "0" && v !== "");
+    const hasData = Object.values(metrics as Record<string, unknown>).some((v: unknown) => v !== "0" && v !== "");
     console.log(`  ${i + 1}秒: `, JSON.stringify(metrics));
     if (hasData) {
       console.log("\n✓ データ取得成功!");

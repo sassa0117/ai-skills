@@ -291,13 +291,14 @@ async function main() {
   const browser = await puppeteer.connect({
     browserURL: `http://127.0.0.1:${DEBUG_PORT}`,
     defaultViewport: { width: 1280, height: 900 },
+    protocolTimeout: 120000,
   });
 
   const page = await browser.newPage();
 
   try {
-    // 初回ログイン待ち
     if (isFirstRun) {
+      // 初回: ログイン画面を開いて待つ
       const existingPages = await browser.pages();
       const loginPage =
         existingPages.find((p) => p.url().includes("x.com")) || page;
@@ -306,6 +307,19 @@ async function main() {
         timeout: 300000,
       });
       console.log("ログイン確認!\n");
+    } else {
+      // 2回目以降: セッション切れチェック
+      console.log("ログイン状態を確認中...");
+      await page.goto("https://x.com/home", { waitUntil: "domcontentloaded", timeout: 30000 });
+      try {
+        await page.waitForSelector('[data-testid="primaryColumn"]', { timeout: 15000 });
+        console.log("ログイン済み!\n");
+      } catch {
+        console.log("セッション切れ。再ログインしてください。");
+        await page.goto("https://x.com/login", { waitUntil: "domcontentloaded" });
+        await page.waitForSelector('[data-testid="primaryColumn"]', { timeout: 300000 });
+        console.log("再ログイン確認!\n");
+      }
     }
 
     // Phase 1: URL収集

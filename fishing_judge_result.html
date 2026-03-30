@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<title>釣り具 判定結果</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f5f5f5; }
+  h1 { font-size: 20px; }
+  .stats { margin-bottom: 12px; font-size: 14px; }
+  .stats span { display: inline-block; padding: 4px 12px; border-radius: 4px; margin-right: 8px; }
+  .reg { background: #c8e6c9; } .skip { background: #eee; }
+  table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  th { background: #333; color: #fff; padding: 8px; text-align: left; font-size: 12px; position: sticky; top: 0; }
+  td { padding: 5px 8px; border-bottom: 1px solid #eee; font-size: 12px; }
+  tr:hover { outline: 2px solid #1976D2; }
+  .filter { margin-bottom: 10px; }
+  .filter button { padding: 4px 12px; margin-right: 4px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: #fff; }
+  .filter button.active { background: #333; color: #fff; }
+</style></head><body>
+<h1>釣り具 即売れリスト 自動判定結果</h1>
+<div class="stats">
+  <span class="reg">🟢🟡 登録: 39件</span>
+  <span class="skip">⚪ スキップ: 46件</span>
+</div>
+<div class="filter">
+  <button class="active" onclick="filter('all',this)">全て</button>
+  <button onclick="filter('register',this)">登録のみ</button>
+  <button onclick="filter('skip',this)">スキップのみ</button>
+</div>
+<table><thead><tr>
+  <th>#</th><th>判定</th><th>商品名</th><th>検索KW</th><th>オフモール価格</th><th>メルカリ中央値</th><th>sold件数</th><th>理由</th><th>確認</th>
+</tr></thead><tbody id="tb"><tr style="background:#e8f5e9">
+      <td>1</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>CALCUTTA CONQUEST 51</strong></td>
+      <td style="text-align:right">¥27,500</td>
+      <td style="text-align:right">¥43000</td>
+      <td style="text-align:right">107</td>
+      <td style="font-size:12px">差額あり（中央値¥43000 - 仕入¥27,500 = 利益¥12,750、ROI 42%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=CALCUTTA%20CONQUEST%2051&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>2</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">BigA ビンテージ ベイトリール</td>
+      <td><strong>AMBASSADEUR 5000</strong></td>
+      <td style="text-align:right">¥16,500</td>
+      <td style="text-align:right">¥10000</td>
+      <td style="text-align:right">683</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 683件、中央値¥10000、利益¥-8,150）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=AMBASSADEUR%205000&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>3</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">電動リール</td>
+      <td><strong>SUPER TANACOM X500CP</strong></td>
+      <td style="text-align:right">¥8,800</td>
+      <td style="text-align:right">¥9000</td>
+      <td style="text-align:right">18</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 18件、中央値¥9000、利益¥-680）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=SUPER%20TANACOM%20X500CP&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>4</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">タックルボックス＆ロッドスタンドセット</td>
+      <td><strong>VS-7055N</strong></td>
+      <td style="text-align:right">¥5,500</td>
+      <td style="text-align:right">¥3200</td>
+      <td style="text-align:right">163</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 163件、中央値¥3200、利益¥-2,850）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=VS-7055N&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>5</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>25 TWIN POWOR XD C3000XG</strong></td>
+      <td style="text-align:right">¥38,500</td>
+      <td style="text-align:right">¥40000</td>
+      <td style="text-align:right">5</td>
+      <td style="font-size:12px">在庫枯れ（sold 5件のみ、中央値¥40000）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=25%20TWIN%20POWOR%20XD%20C3000XG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>6</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>BIOMASTER 4000S</strong></td>
+      <td style="text-align:right">¥6,600</td>
+      <td style="text-align:right">¥8800</td>
+      <td style="text-align:right">10</td>
+      <td style="font-size:12px">差額あり（中央値¥8800 - 仕入¥6,600 = 利益¥1,540、ROI 21%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=BIOMASTER%204000S&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>7</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>22 STELLA C3000XG 043924</strong></td>
+      <td style="text-align:right">¥66,000</td>
+      <td style="text-align:right">¥65450</td>
+      <td style="text-align:right">16</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 16件、中央値¥65450、利益¥-7,150）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=22%20STELLA%20C3000XG%20043924&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>8</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>23 LEGALIS LT 2000S-P</strong></td>
+      <td style="text-align:right">¥7,700</td>
+      <td style="text-align:right">¥6000</td>
+      <td style="text-align:right">79</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 79件、中央値¥6000、利益¥-2,470）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=23%20LEGALIS%20LT%202000S-P&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>9</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">トラウトロッド</td>
+      <td><strong>KAWASEMI RHAPSODY</strong></td>
+      <td style="text-align:right">¥16,500</td>
+      <td style="text-align:right">¥18000</td>
+      <td style="text-align:right">11</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 11件、中央値¥18000、利益¥-150）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=KAWASEMI%20RHAPSODY&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>10</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>LT4000S-CXH</strong></td>
+      <td style="text-align:right">¥19,800</td>
+      <td style="text-align:right">¥11500</td>
+      <td style="text-align:right">67</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 67件、中央値¥11500、利益¥-10,280）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=LT4000S-CXH&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>11</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">アジングロッド</td>
+      <td><strong>AJING X 68L-S</strong></td>
+      <td style="text-align:right">¥5,500</td>
+      <td style="text-align:right">¥6700</td>
+      <td style="text-align:right">25</td>
+      <td style="font-size:12px">差額あり（中央値¥6700 - 仕入¥5,500 = 利益¥650、ROI 11%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=AJING%20X%2068L-S&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>12</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">SEDONA</td>
+      <td><strong>C3000</strong></td>
+      <td style="text-align:right">¥4,400</td>
+      <td style="text-align:right">¥11000</td>
+      <td style="text-align:right">56</td>
+      <td style="font-size:12px">差額あり（中央値¥11000 - 仕入¥4,400 = 利益¥6,160、ROI 127%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=C3000&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>13</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">PLAYS600　電動リール</td>
+      <td><strong>PLAYS600</strong></td>
+      <td style="text-align:right">¥26,400</td>
+      <td style="text-align:right">¥29000</td>
+      <td style="text-align:right">9</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 9件、中央値¥29000、利益¥-40）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=PLAYS600&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>14</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">クーラーボックス</td>
+      <td><strong>FIXCEL LIGHT</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥8700</td>
+      <td style="text-align:right">52</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 52件、中央値¥8700、利益¥-3,400）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=FIXCEL%20LIGHT&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>15</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">リール</td>
+      <td><strong>MILLIONAIRE ST-1000</strong></td>
+      <td style="text-align:right">¥5,500</td>
+      <td style="text-align:right">¥3900</td>
+      <td style="text-align:right">21</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 21件、中央値¥3900、利益¥-2,150）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=MILLIONAIRE%20ST-1000&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>16</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>AMBASSADEUR 1500C</strong></td>
+      <td style="text-align:right">¥77,000</td>
+      <td style="text-align:right">¥5000</td>
+      <td style="text-align:right">410</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 410件、中央値¥5000、利益¥-79,700）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=AMBASSADEUR%201500C&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>17</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">電動丸 600H</td>
+      <td><strong>電動丸 600H 02008</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥21450</td>
+      <td style="text-align:right">2</td>
+      <td style="font-size:12px">差額あり（中央値¥21450 - 仕入¥11,000 = 利益¥9,350、ROI 77%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E9%9B%BB%E5%8B%95%E4%B8%B8%20600H%2002008&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>18</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>BANTAM SCORPION</strong></td>
+      <td style="text-align:right">¥3,300</td>
+      <td style="text-align:right">¥1990</td>
+      <td style="text-align:right">317</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 317件、中央値¥1990、利益¥-1,640）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=BANTAM%20SCORPION&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>19</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>メタニウム MGL</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥12000</td>
+      <td style="text-align:right">829</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 829件、中央値¥12000、利益¥-100）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%A1%E3%82%BF%E3%83%8B%E3%82%A6%E3%83%A0%20MGL&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>20</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>15TWINPOWER C2000S</strong></td>
+      <td style="text-align:right">¥19,800</td>
+      <td style="text-align:right">¥22000</td>
+      <td style="text-align:right">5</td>
+      <td style="font-size:12px">在庫枯れ（sold 5件のみ、中央値¥22000）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=15TWINPOWER%20C2000S&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>21</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>23月下美人 LT2000S</strong></td>
+      <td style="text-align:right">¥16,500</td>
+      <td style="text-align:right">¥13200</td>
+      <td style="text-align:right">171</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 171件、中央値¥13200、利益¥-4,950）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=23%E6%9C%88%E4%B8%8B%E7%BE%8E%E4%BA%BA%20LT2000S&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>22</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>24 SCORPION MD 301XGLH 047175</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">-</td>
+      <td style="text-align:right">0</td>
+      <td style="font-size:12px">在庫枯れ（sold 0件のみ、中央値¥0）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=24%20SCORPION%20MD%20301XGLH%20047175&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>23</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">25ULTEGRA 4000XG</td>
+      <td><strong>048035</strong></td>
+      <td style="text-align:right">¥14,300</td>
+      <td style="text-align:right">¥8800</td>
+      <td style="text-align:right">9</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 9件、中央値¥8800、利益¥-6,930）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=048035&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>24</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>18エクスセンス CI4 3000MHG</strong></td>
+      <td style="text-align:right">¥16,500</td>
+      <td style="text-align:right">¥18600</td>
+      <td style="text-align:right">32</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 32件、中央値¥18600、利益¥450）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=18%E3%82%A8%E3%82%AF%E3%82%B9%E3%82%BB%E3%83%B3%E3%82%B9%20CI4%203000MHG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>25</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>C2000HGS</strong></td>
+      <td style="text-align:right">¥7,700</td>
+      <td style="text-align:right">¥11000</td>
+      <td style="text-align:right">346</td>
+      <td style="font-size:12px">差額あり（中央値¥11000 - 仕入¥7,700 = 利益¥2,530、ROI 30%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=C2000HGS&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>26</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>25 SEPHIA C3000SDHHG 048943</strong></td>
+      <td style="text-align:right">¥27,500</td>
+      <td style="text-align:right">-</td>
+      <td style="text-align:right">0</td>
+      <td style="font-size:12px">在庫枯れ（sold 0件のみ、中央値¥0）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=25%20SEPHIA%20C3000SDHHG%20048943&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>27</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>EXSENCE DC SS XG</strong></td>
+      <td style="text-align:right">¥24,200</td>
+      <td style="text-align:right">¥20000</td>
+      <td style="text-align:right">82</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 82件、中央値¥20000、利益¥-6,620）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=EXSENCE%20DC%20SS%20XG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>28</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>19STRADIC C2000S 04013</strong></td>
+      <td style="text-align:right">¥13,200</td>
+      <td style="text-align:right">¥15890</td>
+      <td style="text-align:right">2</td>
+      <td style="font-size:12px">在庫枯れ（sold 2件のみ、中央値¥15890）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=19STRADIC%20C2000S%2004013&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>29</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>EXSENCE BB 3000MHG</strong></td>
+      <td style="text-align:right">¥8,800</td>
+      <td style="text-align:right">¥12000</td>
+      <td style="text-align:right">107</td>
+      <td style="font-size:12px">差額あり（中央値¥12000 - 仕入¥8,800 = 利益¥2,320、ROI 24%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=EXSENCE%20BB%203000MHG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>30</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>CYGNUS 2500H-LBD</strong></td>
+      <td style="text-align:right">¥13,200</td>
+      <td style="text-align:right">¥14500</td>
+      <td style="text-align:right">93</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 93件、中央値¥14500、利益¥-20）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=CYGNUS%202500H-LBD&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>31</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>NEXAVE C3000HG</strong></td>
+      <td style="text-align:right">¥4,400</td>
+      <td style="text-align:right">¥3480</td>
+      <td style="text-align:right">63</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 63件、中央値¥3480、利益¥-1,360）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=NEXAVE%20C3000HG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>32</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>TATULA 100H</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥12800</td>
+      <td style="text-align:right">120</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 120件、中央値¥12800、利益¥700）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=TATULA%20100H&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>33</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>21　ULTEGRA C3000HG</strong></td>
+      <td style="text-align:right">¥9,900</td>
+      <td style="text-align:right">¥9300</td>
+      <td style="text-align:right">105</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 105件、中央値¥9300、利益¥-1,590）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=21%E3%80%80ULTEGRA%20C3000HG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>34</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">バスロッド</td>
+      <td><strong>RR600SDH</strong></td>
+      <td style="text-align:right">¥5,500</td>
+      <td style="text-align:right">¥12000</td>
+      <td style="text-align:right">3</td>
+      <td style="font-size:12px">差額あり（中央値¥12000 - 仕入¥5,500 = 利益¥5,950、ROI 98%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=RR600SDH&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>35</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">ヘラ竿</td>
+      <td><strong>翼15尺</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥30000</td>
+      <td style="text-align:right">7</td>
+      <td style="font-size:12px">差額あり（中央値¥30000 - 仕入¥22,000 = 利益¥5,800、ROI 24%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E7%BF%BC15%E5%B0%BA&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>36</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">フライロッド</td>
+      <td><strong>クロスS1</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥1200</td>
+      <td style="text-align:right">602</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 602件、中央値¥1200、利益¥-23,000）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%AF%E3%83%AD%E3%82%B9S1&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>37</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">アジングロッド</td>
+      <td><strong>月下美人 MX AJING 65L-T.N</strong></td>
+      <td style="text-align:right">¥12,100</td>
+      <td style="text-align:right">¥22253</td>
+      <td style="text-align:right">3</td>
+      <td style="font-size:12px">差額あり（中央値¥22253 - 仕入¥12,100 = 利益¥8,943、ROI 67%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E6%9C%88%E4%B8%8B%E7%BE%8E%E4%BA%BA%20MX%20AJING%2065L-T.N&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>38</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>19 CYGNUS 3000H-LBD</strong></td>
+      <td style="text-align:right">¥6,600</td>
+      <td style="text-align:right">¥14500</td>
+      <td style="text-align:right">22</td>
+      <td style="font-size:12px">差額あり（中央値¥14500 - 仕入¥6,600 = 利益¥7,240、ROI 100%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=19%20CYGNUS%203000H-LBD&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>39</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>AMBASSADEUR 2500C</strong></td>
+      <td style="text-align:right">¥38,500</td>
+      <td style="text-align:right">¥12000</td>
+      <td style="text-align:right">939</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 939件、中央値¥12000、利益¥-30,350）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=AMBASSADEUR%202500C&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>40</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">電動リール</td>
+      <td><strong>1000H</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥11000</td>
+      <td style="text-align:right">154</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 154件、中央値¥11000、利益¥-1,100）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=1000H&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>41</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>REBO ELITE CB</strong></td>
+      <td style="text-align:right">¥4,400</td>
+      <td style="text-align:right">¥5000</td>
+      <td style="text-align:right">33</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 33件、中央値¥5000、利益¥160）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=REBO%20ELITE%20CB&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>42</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">電動リール</td>
+      <td><strong>電動丸1000PLAYS</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥18000</td>
+      <td style="text-align:right">25</td>
+      <td style="font-size:12px">差額あり（中央値¥18000 - 仕入¥11,000 = 利益¥5,900、ROI 49%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E9%9B%BB%E5%8B%95%E4%B8%B81000PLAYS&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>43</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>月下美人X LT2000S-P</strong></td>
+      <td style="text-align:right">¥9,900</td>
+      <td style="text-align:right">¥10100</td>
+      <td style="text-align:right">123</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 123件、中央値¥10100、利益¥-790）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E6%9C%88%E4%B8%8B%E7%BE%8E%E4%BA%BAX%20LT2000S-P&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>44</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>ヴァンフォードC3000XG</strong></td>
+      <td style="text-align:right">¥13,200</td>
+      <td style="text-align:right">¥19500</td>
+      <td style="text-align:right">85</td>
+      <td style="font-size:12px">差額あり（中央値¥19500 - 仕入¥13,200 = 利益¥4,980、ROI 34%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%B4%E3%82%A1%E3%83%B3%E3%83%95%E3%82%A9%E3%83%BC%E3%83%89C3000XG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>45</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>WORLD SPIN 3000</strong></td>
+      <td style="text-align:right">¥3,300</td>
+      <td style="text-align:right">¥3943</td>
+      <td style="text-align:right">42</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 42件、中央値¥3943、利益¥313）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=WORLD%20SPIN%203000&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>46</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">アジングロッド</td>
+      <td><strong>FCS-T682AJI</strong></td>
+      <td style="text-align:right">¥6,600</td>
+      <td style="text-align:right">¥4999</td>
+      <td style="text-align:right">14</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 14件、中央値¥4999、利益¥-2,261）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=FCS-T682AJI&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>47</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">コンタクトレインスーツ</td>
+      <td><strong>MZRS-461</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥9900</td>
+      <td style="text-align:right">1</td>
+      <td style="font-size:12px">在庫枯れ（sold 1件のみ、中央値¥9900）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=MZRS-461&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>48</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>16 CERTATE 3012 056309</strong></td>
+      <td style="text-align:right">¥9,900</td>
+      <td style="text-align:right">-</td>
+      <td style="text-align:right">0</td>
+      <td style="font-size:12px">在庫枯れ（sold 0件のみ、中央値¥0）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=16%20CERTATE%203012%20056309&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>49</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">SCOPION　XT1000</td>
+      <td><strong>SCOPION XT1000  02469</strong></td>
+      <td style="text-align:right">¥9,900</td>
+      <td style="text-align:right">¥10780</td>
+      <td style="text-align:right">1</td>
+      <td style="font-size:12px">在庫枯れ（sold 1件のみ、中央値¥10780）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=SCOPION%20XT1000%20%2002469&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>50</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">電動リール</td>
+      <td><strong>400FBE</strong></td>
+      <td style="text-align:right">¥16,500</td>
+      <td style="text-align:right">¥13000</td>
+      <td style="text-align:right">137</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 137件、中央値¥13000、利益¥-5,150）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=400FBE&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>51</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>20STELLA SW 4000XG</strong></td>
+      <td style="text-align:right">¥44,000</td>
+      <td style="text-align:right">¥65000</td>
+      <td style="text-align:right">55</td>
+      <td style="font-size:12px">差額あり（中央値¥65000 - 仕入¥44,000 = 利益¥16,600、ROI 34%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=20STELLA%20SW%204000XG&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>52</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">ウェーダー</td>
+      <td><strong>ゲームウェーダー サーフマニア</strong></td>
+      <td style="text-align:right">¥6,600</td>
+      <td style="text-align:right">¥10000</td>
+      <td style="text-align:right">20</td>
+      <td style="font-size:12px">差額あり（中央値¥10000 - 仕入¥6,600 = 利益¥2,740、ROI 38%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%B2%E3%83%BC%E3%83%A0%E3%82%A6%E3%82%A7%E3%83%BC%E3%83%80%E3%83%BC%20%E3%82%B5%E3%83%BC%E3%83%95%E3%83%9E%E3%83%8B%E3%82%A2&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>53</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">BANTAM200</td>
+      <td><strong>BANTAM200</strong></td>
+      <td style="text-align:right">¥6,600</td>
+      <td style="text-align:right">¥22000</td>
+      <td style="text-align:right">6</td>
+      <td style="font-size:12px">差額あり（中央値¥22000 - 仕入¥6,600 = 利益¥14,740、ROI 203%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=BANTAM200&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>54</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>TATULA SV TW 7.3</strong></td>
+      <td style="text-align:right">¥13,200</td>
+      <td style="text-align:right">¥10500</td>
+      <td style="text-align:right">37</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 37件、中央値¥10500、利益¥-4,020）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=TATULA%20SV%20TW%207.3&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>55</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">電動リール</td>
+      <td><strong>LEOBRITZ 200J</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥35000</td>
+      <td style="text-align:right">208</td>
+      <td style="font-size:12px">差額あり（中央値¥35000 - 仕入¥11,000 = 利益¥22,900、ROI 189%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=LEOBRITZ%20200J&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>56</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピリングリール</td>
+      <td><strong>REVROS MX2506</strong></td>
+      <td style="text-align:right">¥3,300</td>
+      <td style="text-align:right">¥2980</td>
+      <td style="text-align:right">17</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 17件、中央値¥2980、利益¥-650）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=REVROS%20MX2506&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>57</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ベイトリール</td>
+      <td><strong>7500 C3</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥9800</td>
+      <td style="text-align:right">35</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 35件、中央値¥9800、利益¥-2,300）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=7500%20C3&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>58</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>23AIRITY SF1000S-P 110511</strong></td>
+      <td style="text-align:right">¥44,000</td>
+      <td style="text-align:right">-</td>
+      <td style="text-align:right">0</td>
+      <td style="font-size:12px">在庫枯れ（sold 0件のみ、中央値¥0）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=23AIRITY%20SF1000S-P%20110511&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>59</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>VANQUISH 1000SSSPG-B</strong></td>
+      <td style="text-align:right">¥42,900</td>
+      <td style="text-align:right">¥40000</td>
+      <td style="text-align:right">5</td>
+      <td style="font-size:12px">在庫枯れ（sold 5件のみ、中央値¥40000）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=VANQUISH%201000SSSPG-B&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>60</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">スピニングリール</td>
+      <td><strong>TD-ITO 2506C 鬼手仏心</strong></td>
+      <td style="text-align:right">¥35,200</td>
+      <td style="text-align:right">¥32800</td>
+      <td style="text-align:right">13</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 13件、中央値¥32800、利益¥-5,920）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=TD-ITO%202506C%20%E9%AC%BC%E6%89%8B%E4%BB%8F%E5%BF%83&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>61</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">バーサタイルウィンタースーツ</td>
+      <td><strong>DW-1925</strong></td>
+      <td style="text-align:right">¥27,500</td>
+      <td style="text-align:right">¥43120</td>
+      <td style="text-align:right">84</td>
+      <td style="font-size:12px">差額あり（中央値¥43120 - 仕入¥27,500 = 利益¥12,870、ROI 43%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=DW-1925&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>62</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">電動リール</td>
+      <td><strong>PLAYS3000</strong></td>
+      <td style="text-align:right">¥19,800</td>
+      <td style="text-align:right">¥23880</td>
+      <td style="text-align:right">23</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 23件、中央値¥23880、利益¥2,100）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=PLAYS3000&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>63</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">フライロッド</td>
+      <td><strong>DS2 590 GRAPHITE  Ⅱ</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥14300</td>
+      <td style="text-align:right">2</td>
+      <td style="font-size:12px">在庫枯れ（sold 2件のみ、中央値¥14300）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=DS2%20590%20GRAPHITE%20%20%E2%85%A1&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>64</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">魚群探知機 ワカサギパック 10TH ANNIVERSARY</td>
+      <td><strong>魚群探知機 ワカサギパック 10TH ANNIVERSARY</strong></td>
+      <td style="text-align:right">¥55,000</td>
+      <td style="text-align:right">-</td>
+      <td style="text-align:right">0</td>
+      <td style="font-size:12px">在庫枯れ（sold 0件のみ、中央値¥0）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E9%AD%9A%E7%BE%A4%E6%8E%A2%E7%9F%A5%E6%A9%9F%20%E3%83%AF%E3%82%AB%E3%82%B5%E3%82%AE%E3%83%91%E3%83%83%E3%82%AF%2010TH%20ANNIVERSARY&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>65</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">PLAYS4000　電動リール</td>
+      <td><strong>PLAYS4000</strong></td>
+      <td style="text-align:right">¥39,600</td>
+      <td style="text-align:right">¥53823</td>
+      <td style="text-align:right">1</td>
+      <td style="font-size:12px">差額あり（中央値¥53823 - 仕入¥39,600 = 利益¥10,263、ROI 24%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=PLAYS4000&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>66</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">電動丸 4000HP</td>
+      <td><strong>電動丸 4000HP</strong></td>
+      <td style="text-align:right">¥27,500</td>
+      <td style="text-align:right">¥21000</td>
+      <td style="text-align:right">54</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 54件、中央値¥21000、利益¥-9,250）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E9%9B%BB%E5%8B%95%E4%B8%B8%204000HP&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>67</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">24ルビアス PC LT2500-H　（00061216）</td>
+      <td><strong>24ルビアス PC LT2500-H</strong></td>
+      <td style="text-align:right">¥24,200</td>
+      <td style="text-align:right">¥2070</td>
+      <td style="text-align:right">127</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 127件、中央値¥2070、利益¥-24,550）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=24%E3%83%AB%E3%83%93%E3%82%A2%E3%82%B9%20PC%20LT2500-H&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>68</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">BJ75D</td>
+      <td><strong>BJ75D</strong></td>
+      <td style="text-align:right">¥11,000</td>
+      <td style="text-align:right">¥19800</td>
+      <td style="text-align:right">8</td>
+      <td style="font-size:12px">差額あり（中央値¥19800 - 仕入¥11,000 = 利益¥7,700、ROI 64%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=BJ75D&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>69</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">グラスパー</td>
+      <td><strong>グラスパー</strong></td>
+      <td style="text-align:right">¥19,800</td>
+      <td style="text-align:right">¥3333</td>
+      <td style="text-align:right">69</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 69件、中央値¥3333、利益¥-18,447）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%B0%E3%83%A9%E3%82%B9%E3%83%91%E3%83%BC&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>70</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">メタリア マルイカ マルチ145 ロッド 釣り</td>
+      <td><strong>メタリア マルイカ マルチ145</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥27705</td>
+      <td style="text-align:right">5</td>
+      <td style="font-size:12px">差額あり（中央値¥27705 - 仕入¥22,000 = 利益¥3,505、ROI 14%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%A1%E3%82%BF%E3%83%AA%E3%82%A2%20%E3%83%9E%E3%83%AB%E3%82%A4%E3%82%AB%20%E3%83%9E%E3%83%AB%E3%83%81145&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>71</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">19 アンタレス 03982 70</td>
+      <td><strong>19 アンタレス 70</strong></td>
+      <td style="text-align:right">¥27,500</td>
+      <td style="text-align:right">¥6080</td>
+      <td style="text-align:right">30</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 30件、中央値¥6080、利益¥-24,170）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=19%20%E3%82%A2%E3%83%B3%E3%82%BF%E3%83%AC%E3%82%B9%2070&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>72</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">ダークシャドゥEX DSEX-73</td>
+      <td><strong>ダークシャドゥEX DSEX-73</strong></td>
+      <td style="text-align:right">¥26,400</td>
+      <td style="text-align:right">¥32000</td>
+      <td style="text-align:right">1</td>
+      <td style="font-size:12px">差額あり（中央値¥32000 - 仕入¥26,400 = 利益¥2,960、ROI 10%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%80%E3%83%BC%E3%82%AF%E3%82%B7%E3%83%A3%E3%83%89%E3%82%A5EX%20DSEX-73&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>73</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">TOMOKAN</td>
+      <td><strong>TOMOKAN</strong></td>
+      <td style="text-align:right">¥6,600</td>
+      <td style="text-align:right">¥8800</td>
+      <td style="text-align:right">32</td>
+      <td style="font-size:12px">差額あり（中央値¥8800 - 仕入¥6,600 = 利益¥1,540、ROI 21%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=TOMOKAN&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>74</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">アライくんルアーセット</td>
+      <td><strong>アライくんルアーセット</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥7000</td>
+      <td style="text-align:right">219</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 219件、中央値¥7000、利益¥-17,200）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%A2%E3%83%A9%E3%82%A4%E3%81%8F%E3%82%93%E3%83%AB%E3%82%A2%E3%83%BC%E3%82%BB%E3%83%83%E3%83%88&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>75</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">ツインパワー</td>
+      <td><strong>ツインパワー</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥25500</td>
+      <td style="text-align:right">49</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 49件、中央値¥25500、利益¥1,300）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%84%E3%82%A4%E3%83%B3%E3%83%91%E3%83%AF%E3%83%BC&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>76</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">がま磯 グレスペシャル G-TUNE 1-53</td>
+      <td><strong>がま磯 グレスペシャル G-TUNE 1-53</strong></td>
+      <td style="text-align:right">¥39,600</td>
+      <td style="text-align:right">¥36000</td>
+      <td style="text-align:right">2</td>
+      <td style="font-size:12px">在庫枯れ（sold 2件のみ、中央値¥36000）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%81%8C%E3%81%BE%E7%A3%AF%20%E3%82%B0%E3%83%AC%E3%82%B9%E3%83%9A%E3%82%B7%E3%83%A3%E3%83%AB%20G-TUNE%201-53&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>77</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">シーボーグ 100JL　00810046 (297748)</td>
+      <td><strong>シーボーグ 100JL</strong></td>
+      <td style="text-align:right">¥69,300</td>
+      <td style="text-align:right">¥75000</td>
+      <td style="text-align:right">21</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 21件、中央値¥75000、利益¥-1,230）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%B7%E3%83%BC%E3%83%9C%E3%83%BC%E3%82%B0%20100JL&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>78</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">カリスタ 82ML/TZ NANO</td>
+      <td><strong>カリスタ 82ML/TZ NANO</strong></td>
+      <td style="text-align:right">¥27,500</td>
+      <td style="text-align:right">¥26800</td>
+      <td style="text-align:right">16</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 16件、中央値¥26800、利益¥-3,450）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%AB%E3%83%AA%E3%82%B9%E3%82%BF%2082ML%2FTZ%20NANO&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#e8f5e9">
+      <td>79</td>
+      <td>🟢 <strong>登録</strong></td>
+      <td style="max-width:250px">エメラルダス MX 86ML-S・N　（05803131）</td>
+      <td><strong>エメラルダス MX 86ML-S・N</strong></td>
+      <td style="text-align:right">¥19,800</td>
+      <td style="text-align:right">¥25126</td>
+      <td style="text-align:right">7</td>
+      <td style="font-size:12px">差額あり（中央値¥25126 - 仕入¥19,800 = 利益¥3,346、ROI 15%）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%A8%E3%83%A1%E3%83%A9%E3%83%AB%E3%83%80%E3%82%B9%20MX%2086ML-S%E3%83%BBN&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>80</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">セフィア XR S86M-S　（302793）</td>
+      <td><strong>セフィア XR S86M-S</strong></td>
+      <td style="text-align:right">¥23,100</td>
+      <td style="text-align:right">¥24000</td>
+      <td style="text-align:right">18</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 18件、中央値¥24000、利益¥-1,410）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%82%BB%E3%83%95%E3%82%A3%E3%82%A2%20XR%20S86M-S&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>81</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">トーナメント エアリティ</td>
+      <td><strong>トーナメント エアリティ</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥11000</td>
+      <td style="text-align:right">35</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 35件、中央値¥11000、利益¥-13,200）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%88%E3%83%BC%E3%83%8A%E3%83%A1%E3%83%B3%E3%83%88%20%E3%82%A8%E3%82%A2%E3%83%AA%E3%83%86%E3%82%A3&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>82</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">ダイワ　キャスティズムT20号-385・V</td>
+      <td><strong>ダイワ キャスティズムT20号-385・V</strong></td>
+      <td style="text-align:right">¥19,800</td>
+      <td style="text-align:right">-</td>
+      <td style="text-align:right">0</td>
+      <td style="font-size:12px">在庫枯れ（sold 0件のみ、中央値¥0）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E3%83%80%E3%82%A4%E3%83%AF%20%E3%82%AD%E3%83%A3%E3%82%B9%E3%83%86%E3%82%A3%E3%82%BA%E3%83%A0T20%E5%8F%B7-385%E3%83%BBV&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>83</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">BLUEMAX船</td>
+      <td><strong>BLUEMAX船</strong></td>
+      <td style="text-align:right">¥3,300</td>
+      <td style="text-align:right">¥3800</td>
+      <td style="text-align:right">42</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 42件、中央値¥3800、利益¥170）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=BLUEMAX%E8%88%B9&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff8e1">
+      <td>84</td>
+      <td>🟡 <strong>登録</strong></td>
+      <td style="max-width:250px">飛天弓 閃光R 19尺</td>
+      <td><strong>飛天弓 閃光R 19尺</strong></td>
+      <td style="text-align:right">¥33,000</td>
+      <td style="text-align:right">¥36000</td>
+      <td style="text-align:right">4</td>
+      <td style="font-size:12px">在庫枯れ（sold 4件のみ、中央値¥36000）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=%E9%A3%9B%E5%A4%A9%E5%BC%93%20%E9%96%83%E5%85%89R%2019%E5%B0%BA&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr>
+<tr style="background:#fff">
+      <td>85</td>
+      <td>⚪ <strong>スキップ</strong></td>
+      <td style="max-width:250px">CALCUTTA CONQUEST200</td>
+      <td><strong>CALCUTTA CONQUEST200</strong></td>
+      <td style="text-align:right">¥22,000</td>
+      <td style="text-align:right">¥12000</td>
+      <td style="text-align:right">6</td>
+      <td style="font-size:12px">差額なし＋流通あり（sold 6件、中央値¥12000、利益¥-12,200）</td>
+      <td><a href="https://jp.mercari.com/search?keyword=CALCUTTA%20CONQUEST200&status=sold_out" target="_blank" style="color:#e53935;font-size:12px">確認</a></td>
+    </tr></tbody></table>
+<script>
+function filter(type, btn) {
+  document.querySelectorAll('.filter button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#tb tr').forEach(row => {
+    if (type === 'all') { row.style.display = ''; return; }
+    const isReg = row.innerHTML.includes('登録');
+    row.style.display = (type === 'register' ? isReg : !isReg) ? '' : 'none';
+  });
+}
+</script></body></html>

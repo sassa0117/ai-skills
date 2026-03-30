@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// メルカリsoldデータ + さっさのタグ付け
+model TaggedItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // メルカリから取得
+  mercariId   String  @unique
+  name        String
+  price       Int
+  description String
+  soldDate    String
+  photos      String  // JSON array of URLs
+  condition   String  // メルカリの状態表記
+  category    String?
+  shippingMethod String?
+  sellerName  String?
+
+  // さっさがタグ付け
+  ipName      String?  // IP名（仮面ライダーオーズ等）
+  series      String?  // シリーズ（仮面ライダー、スーパー戦隊等）
+  productType String?  // 商品種別（DXベルト、フィギュア、ぬいぐるみ等）
+  gradeRank   String?  // 状態ランク（S/A/B/C/D）
+  accessories String?  // 付属品（完品/箱のみ/本体のみ等）
+  limitedType String?  // 限定性（一般/限定/プレバン/イベント限定等）
+  hasTop      Boolean? // トップ（上位互換）あり
+  hasBottom   Boolean? // アンダー（下位互換）あり
+  topNote     String?  // トップの補足（CSMあり等）
+  bottomNote  String?  // アンダーの補足
+  releaseYear Int?     // 発売年
+  memo        String?  // 自由メモ
+
+  @@index([series])
+  @@index([ipName])
+  @@index([productType])
+}
