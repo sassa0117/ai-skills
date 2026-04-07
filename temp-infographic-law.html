@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{width:1600px;height:900px;font-family:'Noto Sans JP',sans-serif;background:#f0f4ff;display:flex;align-items:center;justify-content:center;}
+.wrap{width:1520px;height:820px;background:#fff;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.08);padding:48px 56px;display:flex;flex-direction:column;}
+.title-area{text-align:center;margin-bottom:32px;}
+.title-area h1{font-size:36px;font-weight:900;color:#1e293b;margin-bottom:8px;}
+.title-area p{font-size:16px;color:#64748b;}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;flex:1;}
+.card{background:#fff;border-radius:16px;border:2px solid #e2e8f0;padding:28px 24px;display:flex;flex-direction:column;}
+.card.red{border-color:#fca5a5;background:#fef2f2;}
+.card-icon{font-size:32px;margin-bottom:12px;}
+.card h3{font-size:20px;font-weight:900;color:#1e293b;margin-bottom:12px;line-height:1.4;}
+.card p{font-size:15px;color:#475569;line-height:1.8;flex:1;}
+.card .penalty{margin-top:12px;padding:10px 14px;background:#fee2e2;border-radius:8px;font-size:14px;font-weight:700;color:#dc2626;}
+.card .note{margin-top:12px;padding:10px 14px;background:#dbeafe;border-radius:8px;font-size:14px;font-weight:700;color:#2563eb;}
+.card .warn{margin-top:12px;padding:10px 14px;background:#fef3c7;border-radius:8px;font-size:14px;font-weight:700;color:#92400e;}
+.footer{text-align:center;margin-top:20px;font-size:13px;color:#94a3b8;}
+</style></head><body>
+<div class="wrap">
+  <div class="title-area">
+    <h1>古物営業法 せどりに関わる条文まとめ</h1>
+    <p>電脳・店舗問わず知っておくべき3つの義務と罰則</p>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>第15条<br>本人確認義務</h3>
+      <p>古物を買い受ける際、相手方の<strong>住所・氏名・職業・年齢</strong>を確認する義務。<br><br>非対面取引（電脳）の場合は身分証コピー＋転送不要郵便等の確認が必要。<br><br>店舗でもレジの店員に身分証を求めるのが正式な手続き。</p>
+      <div class="penalty">違反：6月以下の懲役 又は 30万円以下の罰金</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📒</div>
+      <h3>第16条<br>帳簿記載義務</h3>
+      <p>取引の<strong>年月日・品目・数量・特徴・相手方の情報</strong>を帳簿に記載する義務。<br><br>1万円未満は免除されるが、<strong>ゲームソフト・CD/DVD/BD・書籍は例外</strong>（第17条）。</p>
+      <div class="penalty">違反：6月以下の懲役 又は 30万円以下の罰金</div>
+    </div>
+    <div class="card red">
+      <div class="card-icon">⚠️</div>
+      <h3>第31条<br>無許可営業</h3>
+      <p>古物商許可を取得せずに古物の売買を業として行った場合。<br><br>せどりを事業として行うなら<strong>古物商許可は必須</strong>。</p>
+      <div class="penalty">違反：3年以下の懲役 又は 100万円以下の罰金</div>
+    </div>
+  </div>
+  <div class="cards" style="grid-template-columns:repeat(2,1fr);margin-top:24px;">
+    <div class="card">
+      <div class="card-icon">🤝</div>
+      <h3>第15条但書：古物商間取引</h3>
+      <p>相手方が古物商である場合、本人確認義務は<strong>免除</strong>される。ヤフオク等で古物商番号を記載してる出品者からの仕入れはこれに該当。</p>
+      <div class="note">古物商同士の取引なら本人確認は不要</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👤</div>
+      <h3>未成年者からの買取</h3>
+      <p>1万円未満でも、非対面取引では<strong>18歳未満の者からの買取でないことの確認</strong>が必要。メッセージ等で年齢確認を行う必要がある。</p>
+      <div class="warn">「1万円以下は問題ない」は不正確</div>
+    </div>
+  </div>
+  <div class="footer">出典：e-Gov法令検索「古物営業法」「古物営業法施行規則」/ 警視庁「古物商の手続き」</div>
+</div>
+</body></html>

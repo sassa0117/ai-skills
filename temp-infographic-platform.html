@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{width:1600px;height:900px;font-family:'Noto Sans JP',sans-serif;background:#f0f4ff;display:flex;align-items:center;justify-content:center;}
+.wrap{width:1520px;height:820px;background:#fff;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.08);padding:48px 56px;display:flex;flex-direction:column;}
+.title-area{text-align:center;margin-bottom:36px;}
+.title-area h1{font-size:36px;font-weight:900;color:#1e293b;margin-bottom:8px;}
+.title-area p{font-size:16px;color:#64748b;}
+.table-wrap{flex:1;display:flex;flex-direction:column;}
+table{width:100%;border-collapse:collapse;font-size:16px;}
+thead th{background:#1e40af;color:#fff;padding:16px 20px;text-align:left;font-weight:700;font-size:15px;}
+thead th:first-child{border-radius:12px 0 0 0;}
+thead th:last-child{border-radius:0 12px 0 0;}
+tbody td{padding:18px 20px;border-bottom:1px solid #e2e8f0;vertical-align:top;line-height:1.7;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even){background:#f8fafc;}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700;margin-right:4px;}
+.badge-safe{background:#d1fae5;color:#065f46;}
+.badge-warn{background:#fef3c7;color:#92400e;}
+.badge-danger{background:#fee2e2;color:#991b1b;}
+.reason{font-size:14px;color:#64748b;margin-top:4px;}
+.footer-area{margin-top:24px;display:flex;justify-content:space-between;align-items:center;}
+.legend{display:flex;gap:20px;font-size:14px;color:#64748b;}
+.legend span{display:flex;align-items:center;gap:6px;}
+.footer-note{font-size:13px;color:#94a3b8;text-align:right;}
+</style></head><body>
+<div class="wrap">
+  <div class="title-area">
+    <h1>仕入れ先ごとの古物営業法リスク比較</h1>
+    <p>あくまで個人の見解です。法的な保証ではありません。</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:22%">仕入れ先</th>
+          <th style="width:15%">安全度</th>
+          <th style="width:30%">理由</th>
+          <th style="width:33%">ポイント</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>オフモール / セカスト<br>駿河屋</strong></td>
+          <td><span class="badge badge-safe">◎ 安心</span></td>
+          <td>企業運営。法人として古物商許可を取得済み。</td>
+          <td>古物商間取引（第15条但書）に該当。本人確認義務なし。</td>
+        </tr>
+        <tr>
+          <td><strong>Amazon / ヤフショ<br>楽天</strong></td>
+          <td><span class="badge badge-safe">◎ 安心</span></td>
+          <td>住所・事業者情報が記載されている。</td>
+          <td>店舗情報で相手の情報がたどれる。特定商取引法に基づく表記あり。</td>
+        </tr>
+        <tr>
+          <td><strong>ヤフオク<br>（古物商番号あり）</strong></td>
+          <td><span class="badge badge-warn">▲ 条件付き</span></td>
+          <td>古物商番号を記載してる出品者に限定。</td>
+          <td>古物商間取引に該当する可能性あり。番号なしの個人出品者は別扱い。</td>
+        </tr>
+        <tr>
+          <td><strong>メルカリショップス</strong></td>
+          <td><span class="badge badge-warn">▲ 条件付き</span></td>
+          <td>未成年は開設不可。古物商番号記載ショップなら安心。</td>
+          <td>通常のメルカリ（個人間取引）とは異なる。仕入れ先がたどれるかが本質。</td>
+        </tr>
+        <tr>
+          <td><strong>メルカリ（個人）<br>ラクマ 等</strong></td>
+          <td><span class="badge badge-danger">✗ グレー</span></td>
+          <td>非対面取引の本人確認が困難。未成年の可能性あり。</td>
+          <td>施行規則の確認手段（身分証コピー等）を実施するのは現実的に無理。</td>
+        </tr>
+        <tr>
+          <td><strong>店舗（ブックオフ等）</strong></td>
+          <td><span class="badge badge-danger">✗ グレー</span></td>
+          <td>レジの店員に身分証提示を求めるのが正式な手続き。</td>
+          <td>現実的に誰もやっていない。古物法の限界として広く認識されている。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="footer-area">
+    <div class="legend">
+      <span><span class="badge badge-safe">◎</span> ほぼ問題なし</span>
+      <span><span class="badge badge-warn">▲</span> 条件付きOK</span>
+      <span><span class="badge badge-danger">✗</span> グレーゾーン</span>
+    </div>
+    <div class="footer-note">※ 古物営業法の解釈は管轄の警察署によって異なります</div>
+  </div>
+</div>
+</body></html>

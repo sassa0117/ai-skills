@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>合宿2 打ち合わせ記録 - 2026.04.01</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: #f8f9fa; color: #2d3436; line-height: 1.6; font-size: 12px; }
+
+  /* COVER */
+  .cover {
+    width: 100%; height: 297mm;
+    background: linear-gradient(135deg, #0c2340 0%, #1a3a5c 40%, #2d5f8a 100%);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    color: white; text-align: center; padding: 60px 40px;
+    page-break-after: always; position: relative; overflow: hidden;
+  }
+  .cover::before { content:''; position:absolute; top:-50%; right:-30%; width:80%; height:150%; background:radial-gradient(ellipse,rgba(255,255,255,0.05) 0%,transparent 70%); }
+  .cover-badge { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:50px; padding:8px 28px; font-size:13px; font-weight:500; letter-spacing:2px; margin-bottom:40px; }
+  .cover h1 { font-size:48px; font-weight:900; margin-bottom:16px; letter-spacing:3px; }
+  .cover h2 { font-size:22px; font-weight:300; opacity:0.85; margin-bottom:50px; }
+  .cover-meta { display:flex; gap:40px; font-size:14px; opacity:0.7; }
+
+  /* PAGE */
+  .page { max-width:900px; margin:0 auto; padding:36px 50px 30px; background:white; page-break-after:always; }
+  .page:last-child { page-break-after:avoid; }
+
+  /* SECTION HEADER */
+  .sh { display:flex; align-items:center; gap:14px; margin-bottom:22px; padding-bottom:12px; border-bottom:3px solid #0c2340; }
+  .sh-num { background:#0c2340; color:white; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; flex-shrink:0; }
+  .sh h2 { font-size:20px; font-weight:700; color:#0c2340; }
+  .sh .sub { font-size:11px; color:#636e72; }
+
+  /* OVERVIEW GRID */
+  .og { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+  .oc { background:#f1f3f5; border-radius:14px; padding:18px 20px; border-left:5px solid; }
+  .oc.bl { border-color:#0c2340; } .oc.tl { border-color:#00b894; } .oc.or { border-color:#e17055; } .oc.pu { border-color:#6c5ce7; }
+  .oc .lb { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#636e72; margin-bottom:4px; }
+  .oc .vl { font-size:18px; font-weight:700; color:#2d3436; }
+  .oc .dt { font-size:11px; color:#636e72; margin-top:2px; }
+
+  /* HIGHLIGHT BOX */
+  .hb { background:#ebf8ff; border-left:4px solid #3182ce; border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:12px; line-height:1.6; }
+
+  /* PROGRAM VISUAL */
+  .pv { background:linear-gradient(135deg,#f8f9fa,#e9ecef); border-radius:16px; padding:24px; margin-bottom:0; }
+  .pv h3 { font-size:15px; font-weight:700; color:#0c2340; margin-bottom:16px; text-align:center; }
+  .ps { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+  .sc { text-align:center; }
+  .sc .ci { width:66px; height:66px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:0 auto 8px; color:white; font-weight:700; }
+  .sc .ci .n { font-size:22px; line-height:1; } .sc .ci .u { font-size:9px; opacity:0.9; }
+  .sc .cp { font-size:11px; color:#636e72; font-weight:500; }
+  .bg1{background:#0c2340;} .bg2{background:#00b894;} .bg3{background:#e17055;} .bg4{background:#6c5ce7;}
+  .rb { background:#dee2e6; border-radius:10px; height:32px; display:flex; overflow:hidden; margin-bottom:8px; }
+  .rb .sg { display:flex; align-items:center; justify-content:center; color:white; font-size:11px; font-weight:700; }
+  .rb .s1 { background:#0c2340; width:75%; } .rb .s2 { background:#e17055; width:25%; }
+  .rl { display:flex; justify-content:center; gap:20px; font-size:11px; color:#636e72; }
+  .rl span::before { content:''; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle; }
+  .rl .l1::before{background:#0c2340;} .rl .l2::before{background:#e17055;}
+
+  /* NG/OK CARDS */
+  .ngok-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+  .nc { background:#fff5f5; border:1px solid #fed7d7; border-radius:12px; padding:14px 16px; position:relative; }
+  .nc .badge { position:absolute; top:-8px; left:14px; background:#e53e3e; color:white; font-size:9px; font-weight:700; padding:2px 8px; border-radius:5px; letter-spacing:1px; }
+  .nc p { font-size:12px; margin-top:4px; line-height:1.5; }
+  .okc { background:#f0fff4; border:1px solid #c6f6d5; border-radius:12px; padding:14px 16px; position:relative; }
+  .okc .badge { position:absolute; top:-8px; left:14px; background:#38a169; color:white; font-size:9px; font-weight:700; padding:2px 8px; border-radius:5px; letter-spacing:1px; }
+  .okc p { font-size:12px; margin-top:4px; line-height:1.5; }
+
+  /* LECTURE */
+  .lv { background:#fffbeb; border:1px solid #fde68a; border-radius:14px; padding:20px; margin-bottom:0; }
+  .lv h3 { font-size:14px; font-weight:700; color:#92400e; margin-bottom:12px; }
+  .lf { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .ls { background:white; border:2px solid #f59e0b; border-radius:10px; padding:8px 12px; font-size:11px; font-weight:500; text-align:center; min-width:100px; }
+  .la { color:#f59e0b; font-size:18px; font-weight:700; }
+  .eb { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .eng { background:#fff5f5; border-left:4px solid #e53e3e; border-radius:6px; padding:10px 12px; }
+  .eok { background:#f0fff4; border-left:4px solid #38a169; border-radius:6px; padding:10px 12px; }
+  .eng .el, .eok .el { font-size:10px; font-weight:700; margin-bottom:4px; }
+  .eng .el { color:#e53e3e; } .eok .el { color:#38a169; }
+  .eng p, .eok p { font-size:11px; }
+
+  /* PROFILE CARDS */
+  .pc { background:white; border:1px solid #e2e8f0; border-radius:16px; padding:22px; margin-bottom:18px; box-shadow:0 1px 8px rgba(0,0,0,0.03); page-break-inside:avoid; }
+  .ph { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .pa { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:white; flex-shrink:0; }
+  .ph h3 { font-size:17px; font-weight:700; }
+  .tags { display:flex; gap:6px; margin-top:3px; }
+  .tg { font-size:10px; padding:2px 8px; border-radius:16px; font-weight:500; }
+  .tr{background:#fed7d7;color:#c53030;} .tb{background:#bee3f8;color:#2b6cb0;} .tgr{background:#c6f6d5;color:#276749;} .ty{background:#fefcbf;color:#975a16;}
+  .pb { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .ps2 h4 { font-size:10px; font-weight:700; color:#636e72; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:4px; border-bottom:2px solid #e2e8f0; }
+  .ps2 ul { list-style:none; }
+  .ps2 li { font-size:11px; padding:3px 0 3px 14px; position:relative; line-height:1.5; }
+  .ps2 li::before { content:''; position:absolute; left:0; top:9px; width:5px; height:5px; border-radius:50%; }
+  .lr li::before{background:#e53e3e;} .lg li::before{background:#38a169;}
+
+  /* COMMON ISSUES */
+  .ci-box { background:linear-gradient(135deg,#2d3436,#636e72); border-radius:16px; padding:24px; color:white; margin-bottom:20px; }
+  .ci-box h3 { font-size:15px; font-weight:700; margin-bottom:16px; text-align:center; }
+  .ip { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+  .pill { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); border-radius:24px; padding:6px 16px; font-size:11px; font-weight:500; }
+
+  /* STRATEGY FLOW */
+  .sf { background:#f8f9fa; border-radius:16px; padding:24px; margin-bottom:20px; }
+  .sf h3 { font-size:15px; font-weight:700; color:#0c2340; margin-bottom:16px; text-align:center; }
+  .fs { display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:16px; }
+  .fst { background:white; border:2px solid #0c2340; border-radius:12px; padding:10px 14px; text-align:center; min-width:120px; }
+  .fst .sn { font-size:10px; font-weight:700; color:#0c2340; margin-bottom:2px; }
+  .fst .st { font-size:11px; font-weight:500; color:#2d3436; }
+  .far { font-size:20px; color:#0c2340; font-weight:700; }
+
+  /* ROLE SPLIT */
+  .rs { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .rc { border-radius:14px; padding:22px; }
+  .rc.ry { background:linear-gradient(135deg,#2b6cb0,#3182ce); color:white; }
+  .rc.di { background:linear-gradient(135deg,#c05621,#dd6b20); color:white; }
+  .rc h4 { font-size:17px; font-weight:700; margin-bottom:4px; text-align:center; }
+  .rc .rsub { font-size:11px; opacity:0.8; margin-bottom:12px; text-align:center; }
+  .rc ul { list-style:none; text-align:left; font-size:11px; }
+  .rc li { padding:4px 0; border-top:1px solid rgba(255,255,255,0.2); }
+  .rc li:first-child { border-top:none; }
+
+  /* EVENT */
+  .ev { background:linear-gradient(135deg,#6c5ce7,#a29bfe); border-radius:16px; padding:28px; color:white; text-align:center; margin-bottom:20px; }
+  .ev h3 { font-size:18px; font-weight:700; margin-bottom:4px; }
+  .ev .ed { font-size:12px; opacity:0.8; margin-bottom:18px; }
+  .ef { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .eft { background:rgba(255,255,255,0.15); border-radius:12px; padding:14px 12px; }
+  .eft .ico { font-size:24px; margin-bottom:6px; }
+  .eft .ft { font-size:12px; font-weight:700; margin-bottom:2px; }
+  .eft .fd { font-size:10px; opacity:0.85; line-height:1.4; }
+
+  /* TIMELINE */
+  .tl { margin-bottom:20px; padding-left:24px; border-left:3px solid #e2e8f0; }
+  .ti { position:relative; padding:0 0 18px 22px; }
+  .ti:last-child { padding-bottom:0; }
+  .ti::before { content:''; position:absolute; left:-30px; top:3px; width:12px; height:12px; border-radius:50%; border:3px solid; }
+  .ti.dn::before{border-color:#38a169;background:#c6f6d5;} .ti.nx::before{border-color:#e53e3e;background:#fed7d7;} .ti.fu::before{border-color:#a0aec0;background:#f7fafc;}
+  .ti .td { font-size:10px; font-weight:700; color:#636e72; }
+  .ti .tt { font-size:13px; font-weight:700; color:#2d3436; margin-bottom:2px; }
+  .ti .tds { font-size:11px; color:#636e72; line-height:1.4; }
+
+  /* ACTIONS */
+  .na { background:#0c2340; border-radius:16px; padding:24px; color:white; }
+  .na h3 { font-size:15px; font-weight:700; margin-bottom:16px; text-align:center; }
+  .al { list-style:none; }
+  .al li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-top:1px solid rgba(255,255,255,0.15); font-size:11px; }
+  .al li:first-child { border-top:none; }
+  .ach { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-radius:5px; flex-shrink:0; margin-top:1px; }
+  .ow { background:rgba(255,255,255,0.15); border-radius:5px; padding:1px 7px; font-size:10px; font-weight:700; margin-left:auto; flex-shrink:0; }
+
+  .divider { border:none; border-top:1px solid #e2e8f0; margin:18px 0; }
+  .footer { text-align:center; color:#a0aec0; font-size:10px; padding:12px 0; }
+  .mb12{margin-bottom:12px;} .mb16{margin-bottom:16px;} .mb20{margin-bottom:20px;}
+  .stitle { font-size:14px; font-weight:700; margin-bottom:12px; }
+  .stitle.red{color:#e53e3e;} .stitle.green{color:#38a169;} .stitle.navy{color:#0c2340;}
+</style>
+</head>
+<body>
+
+<!-- P1: COVER -->
+<div class="cover">
+  <div class="cover-badge">CONFIDENTIAL</div>
+  <h1>合宿 2</h1>
+  <h2>打ち合わせ記録 & プログラム設計</h2>
+  <div class="cover-meta">
+    <span>Meeting: 2026.04.01</span>
+    <span>Camp: 2026.04.05</span>
+    <span>Members: なつめ / りゅう / だい</span>
+  </div>
+</div>
+
+<!-- P2: OVERVIEW + PROGRAM -->
+<div class="page">
+  <div class="sh"><div class="sh-num">1</div><div><h2>合宿概要</h2><div class="sub">Overview & Key Parameters</div></div></div>
+  <div class="og">
+    <div class="oc bl"><div class="lb">開催日</div><div class="vl">2026年4月5日</div><div class="dt">1日間集中プログラム</div></div>
+    <div class="oc tl"><div class="lb">テーマ</div><div class="vl">女性陣強化</div><div class="dt">前回参加者のスキル・マインド強化</div></div>
+    <div class="oc or"><div class="lb">対象者</div><div class="vl">明日香 / れい / まっすー</div><div class="dt">チェルは費用面で未確定</div></div>
+    <div class="oc pu"><div class="lb">方針</div><div class="vl">リンクに寄せない</div><div class="dt">個別スキル強化 + アシスタント連携</div></div>
+  </div>
+  <div class="hb"><strong>合宿の核心:</strong> 3名の共通課題「思考過多・完璧主義・現状満足」を、パワーワーク中心の瞬発型プログラムで打破する。思考を削り、初動スピードと回転数を体に染み込ませる。</div>
+  <div class="pv">
+    <h3>プログラム設計パラメータ</h3>
+    <div class="ps">
+      <div class="sc"><div class="ci bg1"><span class="n">~10</span><span class="u">本</span></div><div class="cp">ワーク数</div></div>
+      <div class="sc"><div class="ci bg2"><span class="n">20</span><span class="u">分~1h</span></div><div class="cp">1ワーク時間</div></div>
+      <div class="sc"><div class="ci bg3"><span class="n">1/3</span><span class="u">に短縮</span></div><div class="cp">ロープレ時間</div></div>
+      <div class="sc"><div class="ci bg4"><span class="n">0</span><span class="u">延長</span></div><div class="cp">延長なし厳守</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#636e72;margin-bottom:6px;text-align:center;">ワーク構成比率</div>
+    <div class="rb"><div class="sg s1">ディスカッション 75%</div><div class="sg s2">瞬発課題 25%</div></div>
+    <div class="rl"><span class="l1">ディスカッション（まとめ・思考）</span><span class="l2">瞬発課題（反射・即応）</span></div>
+  </div>
+</div>
+
+<!-- P3: NG/OK + LECTURE (ALL ON ONE PAGE) -->
+<div class="page">
+  <div class="sh"><div class="sh-num">2</div><div><h2>アシスタント行動基準</h2><div class="sub">NG Rules & Approval Guidelines</div></div></div>
+  <div class="stitle red">NG（絶対にやらないこと）</div>
+  <div class="ngok-grid mb16">
+    <div class="nc"><div class="badge">NG 1</div><p><strong>直接指摘の禁止</strong><br>「スピード感を意識して」等のワードを使わない</p></div>
+    <div class="nc"><div class="badge">NG 2</div><p><strong>原因分析の禁止</strong><br>「スピード感がないから」という分析を伝えない</p></div>
+    <div class="nc"><div class="badge">NG 3</div><p><strong>普段できることを褒めない</strong><br>前半は特に、既存スキルの承認を控える</p></div>
+    <div class="nc"><div class="badge">NG 4</div><p><strong>後出し戦略の過度な承認</strong><br>後半を選ぶ行動・負荷かけた行為を褒めない</p></div>
+  </div>
+  <div class="stitle green">OK（積極的にやること）</div>
+  <div class="ngok-grid mb16">
+    <div class="okc"><div class="badge">OK 1</div><p><strong>初手を出す行動を承認</strong><br>「初手で出す方がレベル上がる」</p></div>
+    <div class="okc"><div class="badge">OK 2</div><p><strong>「できそうだけどね」承認</strong><br>「それ本当にできなかった？」</p></div>
+    <div class="okc"><div class="badge">OK 3</div><p><strong>行動後に守りを結びつける</strong><br>出ちゃった行動に合わせて伝える</p></div>
+    <div class="okc"><div class="badge">OK 4</div><p><strong>小さな変化を拾う</strong><br>携帯非使用等、微細な成長を認める</p></div>
+  </div>
+  <div class="lv">
+    <h3>レクチャー設計（キーワード結びつけ方式）</h3>
+    <div class="lf">
+      <div class="ls">ワーク実施<br><small>思考ゼロで体験</small></div>
+      <div class="la">></div>
+      <div class="ls">キーワード提示<br><small>例: チームワーク</small></div>
+      <div class="la">></div>
+      <div class="ls">参加者がまとめる<br><small>自分の言葉で言語化</small></div>
+      <div class="la">></div>
+      <div class="ls">言い回し変更<br><small>前の人と同じNG</small></div>
+    </div>
+    <div class="eb">
+      <div class="eng"><div class="el">NG例</div><p>「チームワークを<strong>大事にすることで</strong>〜」<br><small>（汎用的・他人事・思考が浅い）</small></p></div>
+      <div class="eok"><div class="el">OK例</div><p>「<strong>私に足りないのは</strong>チームワーク<strong>と気づいた</strong>」<br><small>（自分事・内省・具体的）</small></p></div>
+    </div>
+  </div>
+</div>
+
+<!-- P4: れいちゃん + 明日香 -->
+<div class="page">
+  <div class="sh"><div class="sh-num">3</div><div><h2>個別プロファイル分析</h2><div class="sub">Individual Assessment & Approach</div></div></div>
+  <div class="pc">
+    <div class="ph">
+      <div class="pa" style="background:linear-gradient(135deg,#3182ce,#63b3ed);">R</div>
+      <div><h3>れいちゃん</h3><div class="tags"><span class="tg tb">所属欲求</span><span class="tg ty">現状満足</span><span class="tg tgr">スキル強化型</span></div></div>
+    </div>
+    <div class="pb">
+      <div class="ps2"><h4>課題（なぜスピードが出ない）</h4><ul class="lr"><li>サラリーマン寄り思考でリンクを継続</li><li>コミュニティ所属欲求が主な動機</li><li>「やろうと思えばできる」が、やろうと思ってない</li><li>短期回収意識が弱い</li></ul></div>
+      <div class="ps2"><h4>アプローチ</h4><ul class="lg"><li><strong>マインドではなくスキル増強</strong>がメイン</li><li>紹介後の関係構築力（橋渡し役）を鍛える</li><li>馴染んでない子を人と仲良くさせる練習</li><li>小さな変化（携帯非使用・合いの手）を承認</li><li>数打つ力は尊敬に値する。そこを活かす</li></ul></div>
+    </div>
+  </div>
+  <div class="pc">
+    <div class="ph">
+      <div class="pa" style="background:linear-gradient(135deg,#e53e3e,#fc8181);">A</div>
+      <div><h3>明日香（あすか）</h3><div class="tags"><span class="tg tr">完璧主義</span><span class="tg ty">ビッグマウス</span><span class="tg tb">モチベ高</span></div></div>
+    </div>
+    <div class="pb">
+      <div class="ps2"><h4>課題（なぜスピードが出ない）</h4><ul class="lr"><li>全部納得してから進みたい → 情報過多で停滞</li><li>失敗したくない → コントローラー気質</li><li>成功体験を自分の力と認識していない</li><li>理想は語るが行動が伴わない</li></ul></div>
+      <div class="ps2"><h4>アプローチ</h4><ul class="lg"><li><strong>りゅう</strong>: スピード・量の可視化（翌日100件送付等）</li><li><strong>だい</strong>: 効率・質のやり方を教える</li><li>新事業参加のモチベーションを活用</li><li>攻め: 月10人新規脈の土台構築</li><li>守り: 月1万売上関係者との月次共有</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- P5: まっすー + 共通課題 -->
+<div class="page">
+  <div class="sh"><div class="sh-num">3</div><div><h2>個別プロファイル分析（続き）</h2><div class="sub">Individual Assessment & Common Issues</div></div></div>
+  <div class="pc">
+    <div class="ph">
+      <div class="pa" style="background:linear-gradient(135deg,#38a169,#68d391);">M</div>
+      <div><h3>まっすー</h3><div class="tags"><span class="tg ty">私生活満足</span><span class="tg tb">内的報酬型</span><span class="tg tgr">習慣化で変わる</span></div></div>
+    </div>
+    <div class="pb">
+      <div class="ps2"><h4>課題（なぜスピードが出ない）</h4><ul class="lr"><li>得たいものがない / 現状に満足</li><li>面倒くさいが勝つ → 習慣化したくない</li><li>セミナー多数参加も成果転換が薄い</li><li>外部アクションで動く（自発的でない）</li></ul></div>
+      <div class="ps2"><h4>アプローチ</h4><ul class="lg"><li>外的報酬で動かない → <strong>内的報酬</strong>で動機づけ</li><li>成功体験 → なぜうまくいったか言語化 → 内省</li><li>日常に1〜2個ビジネスタスクを追加するだけ</li><li>大きく変える必要はない（小さな足し算）</li><li>8月ブース企画が最大の成功体験になりうる</li></ul></div>
+    </div>
+  </div>
+  <div class="ci-box">
+    <h3>3名の共通課題</h3>
+    <div class="ip">
+      <div class="pill">完璧主義</div>
+      <div class="pill">現状満足 / 危機感不足</div>
+      <div class="pill">強み・唯一性が不明確</div>
+      <div class="pill">「やりたい」と「できる」の混同</div>
+      <div class="pill">初動スピードの遅さ</div>
+      <div class="pill">代替可能な存在</div>
+      <div class="pill">成功体験の不足</div>
+    </div>
+  </div>
+  <div class="hb"><strong>代替可能性の問題:</strong> 3人とも「この人を選ぶ理由」が希薄。れいちゃんの良さは他の人も持っている、あすかのふわっとした感じはあみちゃんでも代替可能、まっすーだけ唯一面白そうだが弱い。強みの言語化・行動化による唯一性構築が必要。</div>
+</div>
+
+<!-- P6: STRATEGY + ROLE SPLIT -->
+<div class="page">
+  <div class="sh"><div class="sh-num">4</div><div><h2>戦略設計 & 役割分担</h2><div class="sub">Strategic Framework & Role Assignment</div></div></div>
+  <div class="sf">
+    <h3>スピード獲得フロー（設計意図）</h3>
+    <div class="fs">
+      <div class="fst"><div class="sn">STEP 1</div><div class="st">パワーワーク<br><small>思考ゼロ・瞬発</small></div></div>
+      <div class="far">></div>
+      <div class="fst"><div class="sn">STEP 2</div><div class="st">キーワード結びつけ<br><small>言語化・内省</small></div></div>
+      <div class="far">></div>
+      <div class="fst"><div class="sn">STEP 3</div><div class="st">ディスカッション<br><small>まとめ・承認</small></div></div>
+      <div class="far">></div>
+      <div class="fst"><div class="sn">STEP 4</div><div class="st">次ワークへ即移行<br><small>回転数UP</small></div></div>
+    </div>
+    <div class="hb" style="margin-bottom:0;"><strong>狙い:</strong> 未完成でも初動を出す → 試す → 回収するサイクルを1日で体に叩き込む。「半年考えて良いものを作る」ではなく「今日出して今日回収する」体験を積ませる。</div>
+  </div>
+  <hr class="divider">
+  <div class="stitle navy">アシスタント役割分担</div>
+  <div class="rs">
+    <div class="rc ry">
+      <h4>りゅう</h4>
+      <div class="rsub">量 & スピード担当</div>
+      <ul><li>スピード・行動量の可視化</li><li>「翌日100件送付」等の実績提示</li><li>やりたくないことをやっている実例の開示</li><li>ディスカッションのまとめ言葉</li><li>危機感の打ち込み（成功体験直後）</li></ul>
+    </div>
+    <div class="rc di">
+      <h4>だい</h4>
+      <div class="rsub">質 & 効率担当</div>
+      <ul><li>効率的なやり方・仕組み化の提案</li><li>感情で押す（カリスマ型）</li><li>ファンビジネス的視点の提供</li><li>アフター導線等の具体戦術</li><li>ディスカッション中のノート</li></ul>
+    </div>
+  </div>
+  <div class="hb"><strong>連携の原則:</strong> だいが感情で押す → りゅうが論理で受ける補完構造。ディスカッションのまとめ言葉に思考力を集中。ワーク自体は事前知識なしで参加し、レクチャー時間で思考負荷をかける。</div>
+</div>
+
+<!-- P7: AUGUST EVENT + TIMELINE + ACTIONS -->
+<div class="page">
+  <div class="sh"><div class="sh-num">5</div><div><h2>合宿後アウトプット & 次のアクション</h2><div class="sub">August Event Plan & Next Steps</div></div></div>
+  <div class="ev">
+    <h3>8月大型イベント - ブース企画</h3>
+    <div class="ed">2026年8月1日-2日 / 門脇さん会場</div>
+    <div class="ef">
+      <div class="eft"><div class="ico">&#x1F3AF;</div><div class="ft">ブース担当</div><div class="fd">1イベント丸投げのリスク回避。ブース単位で任せる</div></div>
+      <div class="eft"><div class="ico">&#x1F476;</div><div class="ft">子ども向け企画</div><div class="fd">全員保育士の強みを活かす。保育園にないけど必要なこと</div></div>
+      <div class="eft"><div class="ico">&#x1F3C6;</div><div class="ft">対決プレゼン</div><div class="fd">アシスタント2人 vs 参加者3人で企画を競い合う</div></div>
+    </div>
+  </div>
+  <div class="stitle navy">スケジュール</div>
+  <div class="tl mb20">
+    <div class="ti dn"><div class="td">2026.04.01</div><div class="tt">打ち合わせ（完了）</div><div class="tds">方針・個別課題・NG基準・8月企画の合意</div></div>
+    <div class="ti nx"><div class="td">2026.04.03 15:00</div><div class="tt">最終調整ミーティング</div><div class="tds">ワーク内容・順番の最終決定</div></div>
+    <div class="ti nx"><div class="td">2026.04.05</div><div class="tt">合宿2 本番</div><div class="tds">1日集中・ワーク10本・スピード体得</div></div>
+    <div class="ti fu"><div class="td">2026.04.06</div><div class="tt">営業台本ブラッシュアップ</div><div class="tds">なつめの叩き台をだいが実演→FB</div></div>
+    <div class="ti fu"><div class="td">2026 GW頃</div><div class="tt">準備イベント（案）</div><div class="tds">3人にブース企画を練らせる</div></div>
+    <div class="ti fu"><div class="td">2026.08.01-02</div><div class="tt">大型イベント本番</div><div class="tds">3人がブース担当。企画対決</div></div>
+  </div>
+  <div class="na">
+    <h3>直近のアクション</h3>
+    <ul class="al">
+      <li><div class="ach"></div><div>ワーク詳細設計（20分〜1h x 約10本、延長なし完結の台本作成）</div><div class="ow">なつめ</div></li>
+      <li><div class="ach"></div><div>NGワード回避を踏まえたフィードバックテンプレート準備</div><div class="ow">りゅう / だい</div></li>
+      <li><div class="ach"></div><div>レクチャー用キーワードと言い回しルールの文書化</div><div class="ow">なつめ</div></li>
+      <li><div class="ach"></div><div>個別課題の最終整理とアシスタント役割の確認</div><div class="ow">りゅう / だい</div></li>
+      <li><div class="ach"></div><div>営業台本の叩き台完成 → 合宿翌日に実演FB</div><div class="ow">なつめ</div></li>
+      <li><div class="ach"></div><div>8月イベントのブース枠確保（門脇さんへ連絡）</div><div class="ow">なつめ</div></li>
+    </ul>
+  </div>
+  <div class="footer">合宿2 打ち合わせ記録 | 2026.04.01 | Confidential</div>
+</div>
+
+</body>
+</html>
