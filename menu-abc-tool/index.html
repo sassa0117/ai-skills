@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メニューABC分析ツール</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #faf7f2;
+    --card: #ffffff;
+    --ink: #2a2a2a;
+    --ink-sub: #6b6b6b;
+    --line: #e6e1d9;
+    --accent: #c8541a;
+    --aa: #2e7d32;
+    --ac: #ed6c02;
+    --ca: #1976d2;
+    --cc: #b71c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .lead { color: var(--ink-sub); font-size: 13px; margin-bottom: 24px; }
+  .container { max-width: 1280px; margin: 0 auto; }
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card h2 { font-size: 16px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .card h2 .badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { background: #f5f1ea; font-weight: 600; font-size: 12px; }
+  td input { width: 100%; border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; font: inherit; }
+  td input[type=number] { text-align: right; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  button {
+    background: var(--accent); color: white; border: none; border-radius: 6px;
+    padding: 8px 14px; font: inherit; cursor: pointer; font-size: 13px;
+  }
+  button:hover { opacity: 0.85; }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button.danger { background: transparent; color: var(--cc); border: 1px solid var(--cc); }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .rank-A { background: #e8f5e9; color: #2e7d32; font-weight: 700; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+  .rank-B { background: #fff8e1; color: #f57c00; font-weight: 700; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+  .rank-C { background: #ffebee; color: #c62828; font-weight: 700; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+  .quadrants { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .q { padding: 14px; border-radius: 8px; border: 1px solid var(--line); }
+  .q-aa { background: #e8f5e9; }
+  .q-ac { background: #fff3e0; }
+  .q-ca { background: #e3f2fd; }
+  .q-cc { background: #ffebee; }
+  .q h3 { margin: 0 0 6px; font-size: 13px; }
+  .q .desc { font-size: 11px; color: var(--ink-sub); margin-bottom: 8px; }
+  .q ul { margin: 0; padding-left: 18px; font-size: 12px; }
+  .q ul li { margin-bottom: 2px; }
+  .stat { display: flex; gap: 24px; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  .stat div { font-size: 12px; color: var(--ink-sub); }
+  .stat div b { display: block; font-size: 18px; color: var(--ink); font-weight: 700; }
+  .threshold { display: flex; gap: 16px; align-items: center; font-size: 12px; margin-bottom: 12px; }
+  .threshold input { width: 60px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; }
+  .delete-btn { color: var(--cc); background: none; border: none; cursor: pointer; font-size: 14px; padding: 0 6px; }
+  #chartWrap { height: 360px; }
+  .empty { text-align: center; color: var(--ink-sub); padding: 30px; font-size: 13px; }
+  details { margin-top: 12px; font-size: 12px; }
+  summary { cursor: pointer; color: var(--accent); }
+  details .body { padding: 8px 0; color: var(--ink-sub); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>メニューABC分析ツール</h1>
+  <p class="lead">売上ABC × 粗利ABC のクロス分析でメニューブックの優先度を決める。「飲食店完全バイブル」の考え方ベース。</p>
+
+  <div class="card" style="margin-bottom: 20px;">
+    <h2><span class="badge">入力</span>メニューデータ</h2>
+    <div class="toolbar">
+      <button onclick="addRow()">+ 行を追加</button>
+      <button class="ghost" onclick="loadSample()">サンプルデータ読込</button>
+      <button class="ghost" onclick="exportCSV()">CSV出力</button>
+      <button class="ghost" onclick="document.getElementById('csvFile').click()">CSV読込</button>
+      <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(event)">
+      <button class="danger" onclick="clearAll()">全消去</button>
+    </div>
+    <div class="threshold">
+      <span>ランク区切り:</span>
+      <label>A ≤ <input type="number" id="thA" value="70" min="1" max="99" onchange="render()">%</label>
+      <label>B ≤ <input type="number" id="thB" value="90" min="1" max="99" onchange="render()">%</label>
+      <span style="color: var(--ink-sub)">（残りがC）</span>
+    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th style="width: 22%">商品名</th>
+          <th style="width: 12%">価格</th>
+          <th style="width: 12%">原価</th>
+          <th style="width: 12%">販売数</th>
+          <th style="width: 12%" class="num">売上</th>
+          <th style="width: 12%" class="num">粗利</th>
+          <th style="width: 8%">売上R</th>
+          <th style="width: 8%">粗利R</th>
+          <th style="width: 4%"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2><span class="badge">サマリー</span>全体指標</h2>
+      <div class="stat">
+        <div>商品数<b id="kpiCount">0</b></div>
+        <div>総売上<b id="kpiSales">¥0</b></div>
+        <div>総粗利<b id="kpiProfit">¥0</b></div>
+        <div>平均粗利率<b id="kpiMargin">0%</b></div>
+      </div>
+      <div id="chartWrap"><canvas id="chart"></canvas></div>
+      <details>
+        <summary>分析の前提</summary>
+        <div class="body">
+          売上ABC: 売上構成比の累計でランク分け。デフォルトは A≤70% / B≤90% / C残り。<br>
+          粗利ABC: 粗利構成比の累計で同様にランク分け。<br>
+          縦軸=粗利, 横軸=売上 のバブルチャート。サイズ=販売数。
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge">クロス</span>4象限とアクション</h2>
+      <div class="quadrants" id="quadrants">
+        <div class="q q-aa">
+          <h3>★ 売上A × 粗利A</h3>
+          <div class="desc">看板商品・最強化対象</div>
+          <ul id="q-AA"><li>—</li></ul>
+        </div>
+        <div class="q q-ac">
+          <h3>売上A × 粗利C</h3>
+          <div class="desc">客寄せだが原価重い→改善</div>
+          <ul id="q-AC"><li>—</li></ul>
+        </div>
+        <div class="q q-ca">
+          <h3>売上C × 粗利A</h3>
+          <div class="desc">隠れ優良→押し上げる</div>
+          <ul id="q-CA"><li>—</li></ul>
+        </div>
+        <div class="q q-cc">
+          <h3>売上C × 粗利C</h3>
+          <div class="desc">死に筋→撤去候補</div>
+          <ul id="q-CC"><li>—</li></ul>
+        </div>
+      </div>
+      <details>
+        <summary>各象限のメニューブック施策</summary>
+        <div class="body">
+          <b>★AA</b>: 表紙/最初の見開きに配置。写真30%大。専用ストーリー枠。<br>
+          <b>AC</b>: レシピ改善 or 値上げ前提でリニューアル。原価率を下げる工夫。<br>
+          <b>CA</b>: 掲載位置を上げる、写真追加、ネーミング変更で押し上げ。<br>
+          <b>CC</b>: 削除候補。残すなら明確な役割を再定義（脇役/季節限定/客層維持）。
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'menu-abc-data-v1';
+let data = [];
+let chart = null;
+
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function load() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) data = JSON.parse(saved);
+  } catch (e) {}
+  if (data.length === 0) addRow(false);
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function addRow(rerender = true) {
+  data.push({ id: uid(), name: '', price: 0, cost: 0, qty: 0 });
+  if (rerender) render();
+}
+
+function deleteRow(id) {
+  data = data.filter(d => d.id !== id);
+  render();
+}
+
+function updateField(id, field, value) {
+  const row = data.find(d => d.id === id);
+  if (!row) return;
+  if (field === 'name') row.name = value;
+  else row[field] = parseFloat(value) || 0;
+  save();
+  render();
+}
+
+function clearAll() {
+  if (!confirm('全データを消去します。よろしいですか？')) return;
+  data = [];
+  addRow(false);
+  save();
+  render();
+}
+
+function loadSample() {
+  data = [
+    { id: uid(), name: '黒毛和牛ステーキ',  price: 3800, cost: 1500, qty: 45 },
+    { id: uid(), name: '看板ハンバーグ',     price: 1480, cost: 450,  qty: 180 },
+    { id: uid(), name: 'ランチセットA',     price: 980,  cost: 480,  qty: 220 },
+    { id: uid(), name: '自家製パスタ',       price: 1280, cost: 380,  qty: 95 },
+    { id: uid(), name: '本日の魚料理',      price: 1980, cost: 900,  qty: 30 },
+    { id: uid(), name: 'シーザーサラダ',     price: 880,  cost: 220,  qty: 110 },
+    { id: uid(), name: '自家製デザート',     price: 580,  cost: 120,  qty: 70 },
+    { id: uid(), name: 'グラスワイン',       price: 680,  cost: 180,  qty: 140 },
+    { id: uid(), name: '季節のリゾット',     price: 1380, cost: 520,  qty: 12 },
+    { id: uid(), name: 'チーズ盛り合わせ',   price: 1580, cost: 800,  qty: 8 },
+  ];
+  save();
+  render();
+}
+
+function rankBy(key) {
+  const total = data.reduce((s, d) => s + (d[key] || 0), 0);
+  if (total === 0) return new Map();
+  const sorted = [...data].sort((a, b) => (b[key] || 0) - (a[key] || 0));
+  const thA = parseFloat(document.getElementById('thA').value) || 70;
+  const thB = parseFloat(document.getElementById('thB').value) || 90;
+  const ranks = new Map();
+  let cum = 0;
+  for (const d of sorted) {
+    cum += (d[key] || 0);
+    const pct = (cum / total) * 100;
+    if (pct <= thA) ranks.set(d.id, 'A');
+    else if (pct <= thB) ranks.set(d.id, 'B');
+    else ranks.set(d.id, 'C');
+  }
+  return ranks;
+}
+
+function render() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  for (const row of data) {
+    row.sales = (row.price || 0) * (row.qty || 0);
+    row.profit = ((row.price || 0) - (row.cost || 0)) * (row.qty || 0);
+  }
+
+  const salesRanks = rankBy('sales');
+  const profitRanks = rankBy('profit');
+
+  for (const row of data) {
+    const tr = document.createElement('tr');
+    const sR = salesRanks.get(row.id) || '-';
+    const pR = profitRanks.get(row.id) || '-';
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeHtml(row.name)}" onchange="updateField('${row.id}','name',this.value)" placeholder="商品名"></td>
+      <td><input type="number" value="${row.price || ''}" onchange="updateField('${row.id}','price',this.value)" min="0"></td>
+      <td><input type="number" value="${row.cost || ''}" onchange="updateField('${row.id}','cost',this.value)" min="0"></td>
+      <td><input type="number" value="${row.qty || ''}" onchange="updateField('${row.id}','qty',this.value)" min="0"></td>
+      <td class="num">¥${(row.sales || 0).toLocaleString()}</td>
+      <td class="num">¥${(row.profit || 0).toLocaleString()}</td>
+      <td><span class="rank-${sR}">${sR}</span></td>
+      <td><span class="rank-${pR}">${pR}</span></td>
+      <td><button class="delete-btn" onclick="deleteRow('${row.id}')" title="削除">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  const totalSales = data.reduce((s, d) => s + (d.sales || 0), 0);
+  const totalProfit = data.reduce((s, d) => s + (d.profit || 0), 0);
+  const margin = totalSales > 0 ? (totalProfit / totalSales) * 100 : 0;
+  document.getElementById('kpiCount').textContent = data.length;
+  document.getElementById('kpiSales').textContent = '¥' + totalSales.toLocaleString();
+  document.getElementById('kpiProfit').textContent = '¥' + totalProfit.toLocaleString();
+  document.getElementById('kpiMargin').textContent = margin.toFixed(1) + '%';
+
+  const buckets = { AA: [], AC: [], CA: [], CC: [] };
+  for (const row of data) {
+    if (!row.name) continue;
+    const sR = salesRanks.get(row.id);
+    const pR = profitRanks.get(row.id);
+    if (sR === 'A' && pR === 'A') buckets.AA.push(row.name);
+    else if (sR === 'A' && pR === 'C') buckets.AC.push(row.name);
+    else if (sR === 'C' && pR === 'A') buckets.CA.push(row.name);
+    else if (sR === 'C' && pR === 'C') buckets.CC.push(row.name);
+  }
+  for (const k of ['AA', 'AC', 'CA', 'CC']) {
+    const ul = document.getElementById('q-' + k);
+    ul.innerHTML = buckets[k].length > 0
+      ? buckets[k].map(n => `<li>${escapeHtml(n)}</li>`).join('')
+      : '<li style="color:#aaa">該当なし</li>';
+  }
+
+  renderChart(salesRanks, profitRanks);
+  save();
+}
+
+function renderChart(salesRanks, profitRanks) {
+  const ctx = document.getElementById('chart');
+  const points = data
+    .filter(d => d.name && d.sales > 0)
+    .map(d => {
+      const sR = salesRanks.get(d.id);
+      const pR = profitRanks.get(d.id);
+      let color = '#999';
+      if (sR === 'A' && pR === 'A') color = 'rgba(46,125,50,0.7)';
+      else if (sR === 'A' && pR === 'C') color = 'rgba(237,108,2,0.7)';
+      else if (sR === 'C' && pR === 'A') color = 'rgba(25,118,210,0.7)';
+      else if (sR === 'C' && pR === 'C') color = 'rgba(183,28,28,0.7)';
+      return { x: d.sales, y: d.profit, r: Math.min(20, Math.sqrt(d.qty || 1) * 2), label: d.name, sR, pR, color };
+    });
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'bubble',
+    data: {
+      datasets: [{
+        data: points,
+        backgroundColor: points.map(p => p.color),
+        borderColor: points.map(p => p.color),
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const p = c.raw;
+              return `${p.label}  売上¥${p.x.toLocaleString()} / 粗利¥${p.y.toLocaleString()} (S:${p.sR}/P:${p.pR})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: '売上 (円)' }, beginAtZero: true },
+        y: { title: { display: true, text: '粗利 (円)' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function exportCSV() {
+  const header = '商品名,価格,原価,販売数,売上,粗利\n';
+  const rows = data.map(d =>
+    [d.name, d.price, d.cost, d.qty, d.sales || 0, d.profit || 0]
+      .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob(['﻿' + header + rows], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `menu-abc-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result.replace(/^﻿/, '');
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    const newData = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseCSVLine(lines[i]);
+      if (cols.length < 4) continue;
+      newData.push({
+        id: uid(),
+        name: cols[0] || '',
+        price: parseFloat(cols[1]) || 0,
+        cost: parseFloat(cols[2]) || 0,
+        qty: parseFloat(cols[3]) || 0,
+      });
+    }
+    if (newData.length > 0) {
+      data = newData;
+      save();
+      render();
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  event.target.value = '';
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      result.push(cur); cur = '';
+    } else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+load();
+render();
+</script>
+</body>
+</html>
