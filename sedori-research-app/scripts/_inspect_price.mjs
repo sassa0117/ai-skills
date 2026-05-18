@@ -1,0 +1,23 @@
+import * as cheerio from 'cheerio';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+const url = 'https://www.suruga-ya.jp/search?search_word=' + encodeURIComponent('POP UP PARADE ファリン') + '&searchbox=1';
+const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'ja,en;q=0.9' } });
+const html = await res.text();
+console.log('status:', res.status, 'length:', html.length);
+const $ = cheerio.load(html);
+let count = 0;
+$('#search_result .item').each((i, el) => {
+  if (count >= 4) return false;
+  const $item = $(el);
+  const name = $item.find('.item_detail .title h3.product-name').text().trim();
+  if (!name.includes('ファリン')) return;
+  const priceTeika = $item.find('.item_price .price_teika').html();
+  const priceText = $item.find('.item_price .price_teika span.text-red strong').first().text().trim();
+  const allStrongs = [];
+  $item.find('.item_price .price_teika span.text-red strong').each((j, s) => allStrongs.push($(s).text().trim()));
+  console.log('---', name.slice(0,55), '---');
+  console.log('first.text():', JSON.stringify(priceText));
+  console.log('all strongs:', JSON.stringify(allStrongs));
+  console.log('teika HTML:', priceTeika ? priceTeika.replace(/\s+/g,' ').slice(0,500) : 'none');
+  count++;
+});
