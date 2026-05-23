@@ -88,41 +88,8 @@ const WRONG_CATEGORY_PATTERNS = [
   /(?:アクリルスタンド|ぬいぐるみ|フィギュア|ラバーストラップ)$/,
 ];
 
-// ===== Phase 3: normalize 再適用ロジック =====
-const NORMALIZE_MAP_PATH = path.join(PROJECT_ROOT, "scripts", "comic-ip-normalize.json");
-const NORMALIZE_MAP = JSON.parse(fs.readFileSync(NORMALIZE_MAP_PATH, "utf-8"));
-
-const DECORATION_RE = /[✴✴︎★☆⭐⭐︎✨※♪✿❤❥＊*◆■□◇▲△▽▼◎●○♡♥◉◈❖✦✧❀✼✽❁]/g;
-const INVISIBLE_RE = /[​‌‍﻿⁠ ]/g;
-
-function normalizeStrip(s) {
-  if (!s) return s;
-  let out = s.replace(INVISIBLE_RE, "");
-  out = out.replace(DECORATION_RE, "");
-  // 先頭プレフィックス除去（出品者の状態説明や日付タグ）
-  out = out.replace(/^(漫画|本|品|新品|中古|美品|希少|レア|初版本|印刷版|コミック|ノベル|激)\s+/i, "");
-  out = out.replace(/^\d{1,2}\/\d{1,2}\s+/, "");          // 「2/25 ○○○」型 日付プレフィックス
-  out = out.replace(/^\d+\s+(?=[ぁ-んァ-ヶ一-龯])/, "");   // 「183 ○○○」型 数字プレフィックス（後ろが日本語の時のみ）
-  out = out.replace(/[「『【]+/, "").replace(/[」』】]+$/, ""); // 先頭の鍵括弧
-  out = out.replace(/\s+/g, " ").trim();
-  return out;
-}
-
-function tryNormalize(rawIp) {
-  if (!rawIp) return null;
-  const stripped = normalizeStrip(rawIp);
-  // 既存 NORMALIZE_MAP の各エントリで match試行
-  for (const [norm, patterns] of Object.entries(NORMALIZE_MAP)) {
-    for (const p of patterns) {
-      try {
-        const re = new RegExp(p, "i");
-        if (re.test(stripped)) return norm;
-      } catch (e) { /* invalid regex skip */ }
-    }
-  }
-  // map にマッチしなくても、装飾文字除去だけで変わったらそれを返す
-  return stripped !== rawIp ? stripped : null;
-}
+// ===== Phase 3: normalize ロジックは lib/comic-normalize.mjs に統一 =====
+const { normalizeIP: tryNormalize } = await import("./lib/comic-normalize.mjs");
 
 // ===== 統一判定関数: rawName → excludedReason | null =====
 function judgeText(rawName, normalizedIP) {

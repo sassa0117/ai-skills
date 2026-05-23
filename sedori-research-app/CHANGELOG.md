@@ -84,6 +84,28 @@
 **現状**: **廃案** — ユーザーから「業界常識通り GitHub に push してそれを viewer に使えばいい」指摘で、独自HTML生成スクリプト自体が車輪の再発明と判明。ファイルは未使用のまま残置 (削除は別途判断)
 **正しい運用**: `scripts/sample-one-can-badge.mjs` 等を GitHub に push 済 → `https://github.com/<account>/ai-skills/commits/master` 配下のcommit viewerが「サイト」相当
 
+## 🏷️ v0.3.0 (2026-05-23・normalize ライブラリ統一 + scan時 装飾文字除去組込)
+
+### 変更
+- **新規**: `scripts/lib/comic-normalize.mjs`
+  - `normalizeStrip()`: 装飾文字/不可視文字/プレフィックス/鍵括弧除去を一関数化
+  - `normalizeIP(rawIP, {strict})`: map match + strict 切替（strict=false で stripped fallback）
+  - これまで scan.mjs / data-fixes.mjs に重複していた正規化ロジックを統一
+- **`scripts/comic-firstprint-scan.mjs`**: `normalizeIP()` を lib 経由に置換
+  - scan時点で「✴︎ ✴︎鋼の錬金術師」「遊⭐︎戯⭐︎王」等の装飾文字付き表記が**取得時に正規化されるようになった**
+  - 既存呼び出し側 `normalizeIP(rawIP) || rawIP` の挙動は維持（装飾除去で何も変わらない時のみ rawIP fallback）
+- **`scripts/comic-firstprint-data-fixes.mjs`**: `tryNormalize()` を lib 経由に置換
+  - 旧ローカル normalizeStrip / tryNormalize / NORMALIZE_MAP を削除
+- **bug fix**: lib初期実装で `INVISIBLE_RE` が誤って半角スペースを含んでいた問題を厳密 zero-width 系のみに修正
+  - 影響例: 「東京喰種 トーキョーグール」「ベムベムハンター こてんぐテン丸」の半角スペースが意図せず除去されていた
+
+### 意義
+- scan時点での装飾文字対応 = 毎晩 nightly で取得時に正規化される
+- data-fixes との二重メンテ解消 = normalize map / regex の修正が1箇所で完結
+- minor bump 理由: scan の挙動変更（normalize結果が変わる）= 後方互換だが内部挙動変化
+
+---
+
 ## 🏷️ v0.2.2 (2026-05-23・ドラゴンボール 5/39巻 ASIN追加)
 
 ### 変更

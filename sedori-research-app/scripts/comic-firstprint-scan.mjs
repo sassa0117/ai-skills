@@ -35,6 +35,8 @@ const generateMercariJwt = require("generate-mercari-jwt").default || require("g
 // Gemini text 判定は撤廃 (feedback_use-self-for-text-classification.md 違反のため)。
 // text 分類は shouldExclude (Claude が書いた regex) のみ。追加除外は data-fixes.mjs で post-process。
 const { shouldExclude } = await import("./lib/comic-exclude-patterns.mjs");
+// normalize ロジック (装飾文字除去 + map match) は共用ライブラリへ
+const { normalizeIP: libNormalizeIP } = await import("./lib/comic-normalize.mjs");
 
 // ========================================
 // CLI引数パース
@@ -254,22 +256,12 @@ function extractIP(name) {
 
 // ========================================
 // 仕様 § 3.7 表記揺れ正規化
+// normalize ロジック (装飾文字除去 + map match) は lib/comic-normalize.mjs に統一
 // ========================================
-const NORMALIZE_MAP_PATH = path.join(__dirname, "comic-ip-normalize.json");
-const normalizeMapRaw = JSON.parse(fs.readFileSync(NORMALIZE_MAP_PATH, "utf-8"));
-const normalizeMap = Object.entries(normalizeMapRaw).map(([canonical, patterns]) => ({
-  canonical,
-  regexes: patterns.map(p => new RegExp(p, "i")),
-}));
-
 function normalizeIP(rawIP) {
-  if (!rawIP) return null;
-  for (const { canonical, regexes } of normalizeMap) {
-    for (const re of regexes) {
-      if (re.test(rawIP)) return canonical;
-    }
-  }
-  return null;
+  // strict=false (default): map miss でも装飾除去後の stripped を返す。
+  // 呼び出し側の `normalizeIP(rawIP) || rawIP` fallback は、装飾除去で何も変わらない時のみ発動する。
+  return libNormalizeIP(rawIP);
 }
 
 // ========================================
