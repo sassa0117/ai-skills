@@ -84,6 +84,18 @@
 **現状**: **廃案** — ユーザーから「業界常識通り GitHub に push してそれを viewer に使えばいい」指摘で、独自HTML生成スクリプト自体が車輪の再発明と判明。ファイルは未使用のまま残置 (削除は別途判断)
 **正しい運用**: `scripts/sample-one-can-badge.mjs` 等を GitHub に push 済 → `https://github.com/<account>/ai-skills/commits/master` 配下のcommit viewerが「サイト」相当
 
+## 🏷️ v0.2.2 (2026-05-23・ドラゴンボール 5/39巻 ASIN追加)
+
+### 変更
+- **`scripts/comic-firstprint-apply-amazon-covers.mjs`**: `ASIN_MAP` に 2件追加
+  - ドラゴンボール|5 (4088518357)
+  - ドラゴンボール|39 (408851498X)
+
+### 未取得（次回以降）
+- ドラゴンボール|24 (旧版): 検索結果が完全版24に偏ったため未取得
+
+---
+
 ## 🏷️ v0.2.1 (2026-05-23・ASIN_MAP 10件追加で書影カバー率向上)
 
 ### 変更
