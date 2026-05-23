@@ -32,6 +32,10 @@ const db = new Database(path.join(PROJECT_ROOT, "prisma", "dev.db"));
 
 const generateMercariJwt = require("generate-mercari-jwt").default || require("generate-mercari-jwt");
 
+// Gemini text 判定は撤廃 (feedback_use-self-for-text-classification.md 違反のため)。
+// text 分類は shouldExclude (Claude が書いた regex) のみ。追加除外は data-fixes.mjs で post-process。
+const { shouldExclude } = await import("./lib/comic-exclude-patterns.mjs");
+
 // ========================================
 // CLI引数パース
 // ========================================
@@ -43,14 +47,26 @@ function getArg(name) {
 }
 const hasFlag = (name) => args.includes(name);
 
-const DEFAULT_QUERIES = ["初版 1巻", "初版 5巻", "初版 10巻", "初版 20巻", "初版 30巻"];
+// クエリ: 「初版 1巻」1本で広く取って結果をさばく（さっさ仕様 2026-05-19）
+// メルカリAPI は Google風の負号(-XXX)に対応してないので、除外はコード側 EXCLUDE_PATTERNS で
+const DEFAULT_QUERIES = ["初版 1巻"];
 const queriesArg = getArg("--queries");
 const queries = queriesArg
   ? queriesArg.split(",").map(s => s.trim()).filter(Boolean)
   : DEFAULT_QUERIES;
-const minCount = parseInt(getArg("--min-count") || "2", 10);
+const minCount = parseInt(getArg("--min-count") || "1", 10);
 const jsonOutput = hasFlag("--json");
 const noSave = hasFlag("--no-save");
+
+// 価格セーフティ: 「初版」表記が無くても拾う閾値（さっさ仕様 2026-05-20: 5000→1000、定価超えは全部拾う）
+const PRICE_SAFETY_THRESHOLD = parseInt(getArg("--price-threshold") || "1000", 10);
+
+// Phase2: Phase1の結果から「高騰IP」を抽出 → そのIP名で追加3クエリ検索
+// さっさ仕様 2026-05-20: 状態問わず・1件でもこの閾値超えあれば発動（中央値判定は廃止）
+const HIGH_PRICE_THRESHOLD = parseInt(getArg("--high-price") || "3000", 10);
+const SKIP_PHASE2 = hasFlag("--skip-phase2");
+
+// Gemini 関連フラグは撤廃（text 分類は Claude judge / regex に統一）
 
 const log = (...a) => { if (!jsonOutput) console.log(...a); };
 
@@ -133,16 +149,8 @@ function median(values) {
 // ========================================
 // 仕様 § 3.3 除外フィルタ
 // ========================================
-const EXCLUDE_PATTERNS = [
-  /セット/,
-  /まとめ/,
-  /全巻/,
-  /\d+冊/,
-  /\d+\s*[-〜~ｰ–]\s*\d+\s*巻/,
-];
-function shouldExclude(name) {
-  return EXCLUDE_PATTERNS.some(p => p.test(name));
-}
+// パターンは scripts/lib/comic-exclude-patterns.mjs に集約（3スクリプト共通）。
+// 新規パターンを足す時はそちら1箇所だけ修正すれば全scanに反映される。
 
 // ========================================
 // 仕様 § 3.4 タグ抽出
@@ -178,6 +186,10 @@ function extractCondition(name) {
   const rated = name.match(/(PSA|BGS|CGC)\s*([0-9]+(?:\.[0-9])?)/i);
   if (rated) return { condition: "鑑定品", gradeRank: `${rated[1].toUpperCase()} ${rated[2]}` };
   if (/鑑定品|グレーディング|グレード付/i.test(name)) return { condition: "鑑定品", gradeRank: null };
+  // サイン本（販促のサイン会/サインポップ等は除外）
+  const hasSignature = /サイン本|直筆サイン|サイン入り|サイン色紙|signed/i.test(name)
+    && !/サイン会|サイン入りポップ|サインボード/i.test(name);
+  if (hasSignature) return { condition: "サイン本", gradeRank: null };
   // E 全体的に状態が悪い
   if (/状態(が)?(悪|わる)|難あり|難有り|ジャンク|ボロボロ/.test(name)) return { condition: "E", gradeRank: null };
   // D 傷汚れあり
@@ -319,8 +331,9 @@ const insertGroup = db.prepare(`
     (id, scanId, ipName, volume, tags, itemCount, priceMedian, priceMin, priceMax, samples)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
+// append-only: メルカリ item.id でユニーク、初回観測価格・状態を固定で残す（再出品は別ID）
 const insertItem = db.prepare(`
-  INSERT OR REPLACE INTO ComicFirstPrintItem
+  INSERT OR IGNORE INTO ComicFirstPrintItem
     (id, scanId, groupId, rawName, price, soldDate, url, extractedIP, normalizedIP, volume, tagsJSON, thumbnailUrl, condition, gradeRank)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
@@ -336,16 +349,29 @@ function extractFromItems(rawItems) {
     const v = extractVolume(it.name);
     if (!v) continue;
     const { hasFirstPrint, versionTags } = extractGrade(it.name);
-    if (!hasFirstPrint) continue;
+    // 価格セーフティ: 「初版」表記が無くても高額品はサイン本/特装/見落とし初版の可能性 → 拾う
+    if (!hasFirstPrint && (it.price || 0) < PRICE_SAFETY_THRESHOLD) continue;
     const { condition, gradeRank } = extractCondition(it.name);
     const rawIP = extractIP(it.name);
     if (!rawIP) continue;
-    const normalizedIP = normalizeIP(rawIP);
-    if (!normalizedIP) {
+    const normalizedIP = normalizeIP(rawIP) || rawIP;  // 未マッチでも捨てない、rawIPで保存
+    if (!normalizeIP(rawIP)) {
       unmatchedIPs.set(rawIP, (unmatchedIPs.get(rawIP) || 0) + 1);
-      continue;
     }
-    extracted.push({ ...it, volume: v.vol, versionTags, condition, gradeRank, rawIP, normalizedIP });
+    // 初版判定通った/価格セーフティで拾った を versionTags で区別
+    const tagsForGroup = [...versionTags];
+    if (hasFirstPrint) tagsForGroup.push("初版");
+    else tagsForGroup.push("高額検知");
+    extracted.push({
+      ...it,
+      volume: v.vol,
+      versionTags: tagsForGroup,
+      condition,
+      gradeRank,
+      rawIP,
+      normalizedIP,
+      hasFirstPrint,
+    });
   }
   return { filtered, extracted, unmatchedIPs };
 }
@@ -363,50 +389,15 @@ function groupByIPVolumeTags(extracted) {
   return groups;
 }
 
-// Phase 2 の高騰検知パラメータ
-const HOT_PRICE_THRESHOLD = 5000;  // 1巻中央値これ以上で他巻も追加検索
-const HOT_MIN_COUNT = 2;            // 1巻のサンプル数下限
-
 async function main() {
   const scanId = generateId();
   if (!noSave) insertScan.run(scanId);
   log(`▶ scanId: ${scanId}`);
-  log(`▶ queries: ${queries.join(" / ")}`);
+  log(`▶ Phase1 queries: ${queries.length}本（${queries.join(" / ")}）`);
 
-  // ========== Phase 1: 既存のquery検索（広く浅く） ==========
+  // ========== Phase1: 新着順で広く取得 ==========
   const allItems = new Map();
   for (const q of queries) {
-    log(`  [Phase1] 検索: "${q}"`);
-    const items = await fetchMercari(q);
-    log(`    取得 ${items.length}件`);
-    for (const it of items) {
-      if (!allItems.has(it.id)) allItems.set(it.id, it);
-    }
-    await new Promise(r => setTimeout(r, 1200));
-  }
-  log(`▶ [Phase1] 重複排除後: ${allItems.size}件`);
-
-  // ========== Phase 1.5: 1巻の高騰IPを検知 ==========
-  const phase1 = extractFromItems([...allItems.values()]);
-  const phase1Groups = groupByIPVolumeTags(phase1.extracted);
-  const hotIPs = [...phase1Groups.values()]
-    .filter(g => g.volume === 1 && g.tags === "" && g.items.length >= HOT_MIN_COUNT)
-    .filter(g => median(g.items.map(i => i.price)) >= HOT_PRICE_THRESHOLD)
-    .map(g => ({
-      ipName: g.ipName,
-      median: median(g.items.map(i => i.price)),
-      n: g.items.length,
-    }))
-    .sort((a, b) => b.median - a.median);
-
-  log(`▶ [Phase1.5] 1巻中央値${HOT_PRICE_THRESHOLD}円以上のIP: ${hotIPs.length}件`);
-  for (const h of hotIPs) log(`    ${h.ipName} (中央値¥${h.median.toLocaleString()}, n=${h.n})`);
-
-  // ========== Phase 2: 高騰IPで追加検索（巻数指定なし、部分一致で全巻取得） ==========
-  let phase2Added = 0;
-  for (const h of hotIPs) {
-    const q = `${h.ipName} 初版`;
-    log(`  [Phase2] 検索: "${q}"`);
     const items = await fetchMercari(q);
     let added = 0;
     for (const it of items) {
@@ -415,11 +406,54 @@ async function main() {
         added++;
       }
     }
-    log(`    取得 ${items.length}件 / 新規追加 ${added}件`);
-    phase2Added += added;
+    log(`  Phase1 "${q}" 取得 ${items.length} / 新規 ${added} / 累計 ${allItems.size}`);
     await new Promise(r => setTimeout(r, 1200));
   }
-  log(`▶ [Phase2] 追加分: ${phase2Added}件 / 合計: ${allItems.size}件`);
+  log(`▶ Phase1 重複排除後: ${allItems.size}件`);
+
+  // ========== Phase1.5: 1巻スキャン結果から高騰IP抽出 ==========
+  // さっさ仕様 2026-05-20: 状態問わず（hasFirstPrint不問）・1件でも HIGH_PRICE_THRESHOLD 超えがあれば発動
+  const phase1Extracted = extractFromItems([...allItems.values()]).extracted;
+  const ipVol1Prices = new Map();
+  for (const it of phase1Extracted) {
+    if (it.volume !== 1) continue;
+    if (!ipVol1Prices.has(it.normalizedIP)) ipVol1Prices.set(it.normalizedIP, []);
+    ipVol1Prices.get(it.normalizedIP).push(it.price);
+  }
+  const highIPs = [];
+  for (const [ip, prices] of ipVol1Prices) {
+    const maxPrice = Math.max(...prices);
+    if (maxPrice < HIGH_PRICE_THRESHOLD) continue;
+    highIPs.push({ ip, max: maxPrice, n: prices.length });
+  }
+  highIPs.sort((a, b) => b.max - a.max);
+  log(`▶ Phase1.5 高騰IP抽出: ${highIPs.length}件 (1巻に¥${HIGH_PRICE_THRESHOLD}超え1件以上)`);
+  if (highIPs.length) {
+    log(`   ${highIPs.slice(0, 10).map(h => `${h.ip}(max¥${h.max}/n${h.n})`).join(" / ")}${highIPs.length > 10 ? ` +${highIPs.length - 10}` : ""}`);
+  }
+
+  // ========== Phase2: 高騰IPで追加3クエリ検索 ==========
+  // さっさ仕様 2026-05-20: IPごとに3クエリ展開（③廃止、②-3 で代替）
+  //   ②-1: {IP} 2巻 初版    (2巻初版を狙い撃ち)
+  //   ②-2: {IP} 1巻         (状態問わず1巻の他の出品)
+  //   ②-3: {IP} 初版        (初版表記ある全巻を網羅)
+  if (!SKIP_PHASE2 && highIPs.length) {
+    for (const { ip } of highIPs) {
+      const queries = [`${ip} 2巻 初版`, `${ip} 1巻`, `${ip} 初版`];
+      for (const q of queries) {
+        const items = await fetchMercari(q);
+        let added = 0;
+        for (const it of items) {
+          if (!allItems.has(it.id)) {
+            allItems.set(it.id, it);
+            added++;
+          }
+        }
+        log(`  Phase2 "${q}" 取得 ${items.length} / 新規 ${added} / 累計 ${allItems.size}`);
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+  }
 
   // ========== 全アイテムで最終フィルタ・抽出・グルーピング ==========
   const totalFetched = allItems.size;
@@ -428,7 +462,13 @@ async function main() {
   log(`▶ IP抽出成功（正規化済み）: ${extracted.length}件`);
   log(`▶ 未マッチIP: ${unmatchedIPs.size}種`);
 
-  const groups = groupByIPVolumeTags(extracted);
+  // Gemini判定撤廃 (text 分類はClaude judge regex に統一)
+  // scan時は extractFromItems の shouldExclude で text 除外済。
+  // 追加除外 (セット品/雑誌/専用/特典付き/カテゴリ違い) は post-process で
+  // data-fixes.mjs を走らせる運用に変更。scan後に下記コマンドを実行する想定:
+  //   node scripts/comic-firstprint-data-fixes.mjs
+  const validated = extracted;
+  const groups = groupByIPVolumeTags(validated);
   log(`▶ ユニークグループ: ${groups.size}`);
 
   // 5. 集計・DB保存
@@ -491,6 +531,7 @@ async function main() {
       totalFetched,
       totalFiltered: filtered.length,
       totalExtracted: extracted.length,
+      totalValidated: validated.length,
       totalGroups: groups.size,
       topGroups,
       unmatchedTop: unmatchedTop.map(([ip, count]) => ({ ip, count })),

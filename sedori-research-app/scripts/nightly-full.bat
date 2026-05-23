@@ -51,10 +51,13 @@ node scripts/comic-firstprint-scan.mjs >> %LOGFILE% 2>&1
 echo [8/10] comic-firstprint-fetch-covers >> %LOGFILE%
 node scripts/comic-firstprint-fetch-covers.mjs >> %LOGFILE% 2>&1
 
-echo [9/10] comic-firstprint-apply-amazon-covers >> %LOGFILE%
+echo [9/11] comic-firstprint-apply-amazon-covers >> %LOGFILE%
 node scripts/comic-firstprint-apply-amazon-covers.mjs >> %LOGFILE% 2>&1
 
-echo [10/10] sync-to-comic-firstprint-web (SQLite -> Neon Postgres) >> %LOGFILE%
+echo [10/11] comic-firstprint-data-fixes (Claude判定で汚染除去+Group統合) >> %LOGFILE%
+node scripts/comic-firstprint-data-fixes.mjs >> %LOGFILE% 2>&1
+
+echo [11/11] sync-to-comic-firstprint-web (SQLite -> Neon Postgres) >> %LOGFILE%
 pushd "C:\Users\user\comic-firstprint-web"
 node scripts/seed-from-sqlite.mjs >> "%~dp0\..\%LOGFILE%" 2>&1
 popd

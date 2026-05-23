@@ -32,28 +32,65 @@ console.log(DRY_RUN ? "*** DRY RUN MODE *** (DB変更なし)" : "*** 本走 ***"
 // ===== Phase 1: セット品検出 =====
 const SET_PATTERNS = [
   /\d+\s*巻\s*[〜~ーから～-]\s*\d+\s*巻/,        // 「1巻から22巻」「1巻〜23巻」「1巻ー22巻」
-  /[1１一壱]\s*[〜~]\s*\d+\s*巻/,                  // 「1〜23巻」（"巻"前が省略）
+  /[1１一壱]\s*[\-‐ー－〜~～]\s*\d+\s*巻/,         // 「1〜23巻」「1～23巻」「1-31巻」「1 -31巻」（"巻"前が省略・チルダ/ハイフン/長音符）
   /全\s*\d+\s*巻/,                                  // 「全11巻」
   /\d+\s*冊\s*(セット|まとめ|一括)/,                 // 「N冊セット」「N冊まとめ」
   /\d+\s*巻\s*(セット|まとめ売り|一括)/,            // 「23巻セット」
-  /(まとめ売り|一括売り|全巻セット|全巻まとめ)/,
+  /(まとめ売り|一括売り|全巻セット|全巻まとめ|最新刊まで)/,
+  /\d+\s*巻\s*まで/,
   /(BOX|ボックス|box)\s*セット/i,
   /\b完結\b.{0,5}セット/,
+  /\d+\s*[,、・]\s*\d+\s*[,、・]\s*\d+\s*巻/,    // 「70,71,72巻」「1、2、3巻」（カンマ/読点/中黒で巻数列挙）
+  /\d+\s*巻\s*[,、・]\s*\d+\s*巻/,                 // 「1巻,2巻」（巻明示で2冊以上）
+  /\d+\s*[,、・]\s*\d+\s*巻\s*セット/,             // 「1,2,3巻 セット」
 ];
 
-// ===== Phase 2: 雑誌混入検出 =====
+// ===== Phase 2: 雑誌混入 + 専用出品検出 =====
 const MAGAZINE_PATTERNS = [
   /漫画\s*雑誌/,
   /雑誌\s*[（(]?\s*"""/,
   /"""\s*[）)]?\s*\d+\s*巻/,                       // 「""" """ 4 巻)」
   /号.{0,8}表紙/,                                   // 「○号 ○○ 表紙」
+  // 専用出品（メルカリ特有：取置依頼）
+  /^[A-Za-z0-9*✨★☆]+\s*[A-Za-z0-9*✨★☆]?\s*様/,    // 「N J 様」「N*✨様」「a*様」等
+  /[A-Za-z0-9]{1,3}\s*様(?!\S)/,                    // 「NJ様」等
+  /専用\s*出品/,
+  /お取り置き/,
+  /お取置き/,
+];
+
+// ===== Phase 2b: 特典・グッズ付き出品（価格が歪む）=====
+const GIFT_BUNDLED_PATTERNS = [
+  /特典.{0,3}付/,
+  /(?:アクスタ|アクリル.?スタンド).{0,3}付/,
+  /(?:缶バッジ|缶バッチ).{0,3}付/,
+  /ポスター.{0,3}付/,
+  /(?:色紙|サイン色紙).{0,3}付/,
+  /(?:ぬいぐるみ|フィギュア|ラバスト|キーホルダー).{0,3}付/,
+  /(?:応援店|書店).{0,5}ペーパー/,
+  /イラスト\s*カード.{0,3}付/,
+  /(?:特典|おまけ|オマケ).{0,3}多数/,
+  /サイン.{0,3}本/,
+  /(?:アクリルスタンド|缶バッジ|ぬいぐるみ|フィギュア)\s*(?:も|＋|プラス)/,
+  /サイン\s*色紙/,
+  /(?:Blu-?ray|DVD|CD)\s*(?:BOX|ボックス|付)/i,
+];
+
+// ===== Phase 2c: 他カテゴリ出品（コミック以外混入）=====
+const WRONG_CATEGORY_PATTERNS = [
+  /Blu-?ray/i,
+  /\bDVD\b/i,
+  /\bCD\b/,
+  /(?:ポケカ|遊戯王\s*カード|トレカ|デュエマ\s*カード)/,
+  /(?:エナジーマーカー|ARS\d+)/,        // ポケカ評価カード
+  /(?:アクリルスタンド|ぬいぐるみ|フィギュア|ラバーストラップ)$/,
 ];
 
 // ===== Phase 3: normalize 再適用ロジック =====
 const NORMALIZE_MAP_PATH = path.join(PROJECT_ROOT, "scripts", "comic-ip-normalize.json");
 const NORMALIZE_MAP = JSON.parse(fs.readFileSync(NORMALIZE_MAP_PATH, "utf-8"));
 
-const DECORATION_RE = /[✴︎★☆⭐︎✨※♪✿❤❥]/g;
+const DECORATION_RE = /[✴✴︎★☆⭐⭐︎✨※♪✿❤❥＊*◆■□◇▲△▽▼◎●○♡♥◉◈❖✦✧❀✼✽❁]/g;
 const INVISIBLE_RE = /[​‌‍﻿⁠ ]/g;
 
 function normalizeStrip(s) {
@@ -80,37 +117,65 @@ function tryNormalize(rawIp) {
   return stripped !== rawIp ? stripped : null;
 }
 
-// ===== Phase 1+2 実行 =====
-console.log("\n[Phase 1+2] セット品・雑誌混入を excludedReason に UPDATE...");
-const validItems = db.prepare("SELECT id, rawName, normalizedIP FROM ComicFirstPrintItem WHERE excludedReason IS NULL").all();
-let setCount = 0, magCount = 0;
-const updExcluded = db.prepare("UPDATE ComicFirstPrintItem SET excludedReason = ?, groupId = NULL WHERE id = ?");
-const sampleSet = [], sampleMag = [];
-for (const it of validItems) {
-  const name = it.rawName || "";
-  const ip = it.normalizedIP || "";
-  let matched = null;
-  for (const re of SET_PATTERNS) {
-    if (re.test(name)) { matched = "text:set品"; break; }
-  }
-  if (matched) {
-    if (sampleSet.length < 5) sampleSet.push(name.slice(0, 80));
-    if (!DRY_RUN) updExcluded.run(matched, it.id);
-    setCount++;
-    continue;
-  }
+// ===== 統一判定関数: rawName → excludedReason | null =====
+function judgeText(rawName, normalizedIP) {
+  const name = rawName || "";
+  const ip = normalizedIP || "";
+  for (const re of SET_PATTERNS) if (re.test(name)) return "text:set品";
   for (const re of MAGAZINE_PATTERNS) {
-    if (re.test(name) || re.test(ip)) { matched = "text:雑誌混入"; break; }
+    if (re.test(name) || re.test(ip)) return "text:雑誌混入or専用";
   }
-  if (matched) {
-    if (sampleMag.length < 5) sampleMag.push(name.slice(0, 80));
-    if (!DRY_RUN) updExcluded.run(matched, it.id);
-    magCount++;
+  for (const re of GIFT_BUNDLED_PATTERNS) if (re.test(name)) return "text:特典付き";
+  for (const re of WRONG_CATEGORY_PATTERNS) if (re.test(name)) return "text:カテゴリ違い";
+  return null;
+}
+
+// ===== Phase 0: 旧Gemini判定を Claude (text) 判定で再評価 =====
+// feedback_use-self-for-text-classification.md 違反の解消:
+// Gemini API を text 分類に使ってたのを撤廃、Claude が書いた text パターンで再判定。
+console.log("\n[Phase 0] 旧Gemini判定 (excludedReason='gemini:%') を Claude判定で再評価...");
+const geminiItems = db.prepare("SELECT id, rawName, normalizedIP, excludedReason FROM ComicFirstPrintItem WHERE excludedReason LIKE 'gemini:%'").all();
+const updReason = db.prepare("UPDATE ComicFirstPrintItem SET excludedReason = ?, groupId = CASE WHEN ? IS NULL THEN groupId ELSE NULL END WHERE id = ?");
+const restoreValid = db.prepare("UPDATE ComicFirstPrintItem SET excludedReason = NULL WHERE id = ?");
+let geminiKept = 0, geminiRestored = 0;
+const sampleRestored = [];
+for (const it of geminiItems) {
+  const reason = judgeText(it.rawName, it.normalizedIP);
+  if (reason) {
+    if (!DRY_RUN) updReason.run(reason, reason, it.id);
+    geminiKept++;
+  } else {
+    if (sampleRestored.length < 10) sampleRestored.push(it.rawName.slice(0, 80));
+    if (!DRY_RUN) restoreValid.run(it.id);
+    geminiRestored++;
   }
 }
-console.log(`  セット品除外: ${setCount}件, 雑誌混入除外: ${magCount}件`);
+console.log(`  旧Gemini→text再分類: ${geminiKept}件除外維持 / ${geminiRestored}件をvalidに復活`);
+if (sampleRestored.length) {
+  console.log("  復活サンプル(本物の初版コミックとして再認識):");
+  sampleRestored.forEach(s => console.log("    " + s));
+}
+
+// ===== Phase 1+2+2b+2c 実行 =====
+console.log("\n[Phase 1+2+2b+2c] valid item に text判定を再適用...");
+const validItems = db.prepare("SELECT id, rawName, normalizedIP FROM ComicFirstPrintItem WHERE excludedReason IS NULL").all();
+let setCount = 0, magCount = 0, giftCount = 0, wrongCount = 0;
+const updExcluded = db.prepare("UPDATE ComicFirstPrintItem SET excludedReason = ?, groupId = NULL WHERE id = ?");
+const sampleSet = [], sampleMag = [], sampleGift = [], sampleWrong = [];
+for (const it of validItems) {
+  const reason = judgeText(it.rawName, it.normalizedIP);
+  if (!reason) continue;
+  if (!DRY_RUN) updExcluded.run(reason, it.id);
+  if (reason === "text:set品") { if (sampleSet.length < 3) sampleSet.push((it.rawName||"").slice(0,80)); setCount++; }
+  else if (reason === "text:雑誌混入or専用") { if (sampleMag.length < 3) sampleMag.push((it.rawName||"").slice(0,80)); magCount++; }
+  else if (reason === "text:特典付き") { if (sampleGift.length < 3) sampleGift.push((it.rawName||"").slice(0,80)); giftCount++; }
+  else if (reason === "text:カテゴリ違い") { if (sampleWrong.length < 3) sampleWrong.push((it.rawName||"").slice(0,80)); wrongCount++; }
+}
+console.log(`  セット品: ${setCount} / 雑誌or専用: ${magCount} / 特典付き: ${giftCount} / カテゴリ違い: ${wrongCount}`);
 if (sampleSet.length) console.log("  セット例:", sampleSet);
-if (sampleMag.length) console.log("  雑誌例:", sampleMag);
+if (sampleMag.length) console.log("  雑誌/専用例:", sampleMag);
+if (sampleGift.length) console.log("  特典付き例:", sampleGift);
+if (sampleWrong.length) console.log("  カテ違い例:", sampleWrong);
 
 // ===== Phase 3 実行 =====
 console.log("\n[Phase 3] 装飾文字・不可視文字 normalize 統合...");
@@ -129,6 +194,24 @@ for (const it of stillValid) {
 }
 console.log(`  normalize変更: ${normCount}件`);
 sampleNorm.forEach(s => console.log("   ", s));
+
+// ===== Phase 3.5: Group.ipName を Item の normalizedIP 多数派に追従 =====
+console.log("\n[Phase 3.5] Group.ipName を Item の normalizedIP 多数派に追従...");
+const allGroupsForIpFix = db.prepare("SELECT id, ipName FROM ComicFirstPrintGroup").all();
+const updGroupIp = db.prepare("UPDATE ComicFirstPrintGroup SET ipName = ? WHERE id = ?");
+let groupIpUpdated = 0;
+const sampleIpFix = [];
+for (const g of allGroupsForIpFix) {
+  const topIp = db.prepare("SELECT normalizedIP, COUNT(*) c FROM ComicFirstPrintItem WHERE groupId=? AND excludedReason IS NULL GROUP BY normalizedIP ORDER BY c DESC LIMIT 1").get(g.id);
+  if (!topIp || !topIp.normalizedIP) continue;
+  if (topIp.normalizedIP !== g.ipName) {
+    if (sampleIpFix.length < 10) sampleIpFix.push(`[${g.ipName}] → [${topIp.normalizedIP}]`);
+    if (!DRY_RUN) updGroupIp.run(topIp.normalizedIP, g.id);
+    groupIpUpdated++;
+  }
+}
+console.log(`  Group.ipName 追従更新: ${groupIpUpdated}件`);
+sampleIpFix.forEach(s => console.log("   ", s));
 
 // ===== Phase 4: 同IP×同volume の Group統合 =====
 console.log("\n[Phase 4] 同IP×同volume 重複Group の統合...");

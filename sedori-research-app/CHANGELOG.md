@@ -103,3 +103,33 @@
 **理由**: 楽天Books API の `pickVol1` が BLEACH 1巻として小説スピンオフ「Can't Fear Your Own World」(ISBN 9784087034240) を誤選択し、本番Webで BLEACH 1巻ページに別作品の表紙が出ていた。Amazon ASIN を明示指定することで、apply-amazon-covers.mjs 再走時に正しい漫画版1巻書影に上書きする
 **ユーザー承認**: 済 (本セッションで「ブリーチ初版、1巻書影違う」明示指摘 → WebSearch で正規 ASIN特定 → 追加)
 **残課題**: 同型のバグ (楽天 pickVol1 が誤選択) が他IPにもある可能性。BLEACH 以外は本セッション対処範囲外
+
+### 2026-05-23 (Gemini text 判定撤廃 → Claude judge / regex に統一)
+**ファイル**: 複数同時改修
+- `scripts/comic-firstprint-scan.mjs`: Gemini 関連 import (line 35) / フラグ (SKIP_GEMINI/GEMINI_BATCH/GEMINI_CONCURRENCY) / 判定ブロック (line 466-504) を全撤廃。text 分類は `shouldExclude` のみ、追加除外は data-fixes.mjs で post-process
+- `scripts/comic-firstprint-data-fixes.mjs`:
+  - **Phase 0 新規**: 既存 `excludedReason='gemini:%'` を Claude judge (text regex) で再評価。約1308件中 280件除外維持・1028件をvalid復活
+  - `GIFT_BUNDLED_PATTERNS` 追加（特典付き・アクスタ付き・サイン本・応援店ペーパー・カード付き等）
+  - `WRONG_CATEGORY_PATTERNS` 追加（Blu-ray/DVD/CD/ポケカ/トレカ/アクスタ単体）
+  - `SET_PATTERNS` 拡張: カンマ/読点/中黒区切りの巻数列挙 (例「70,71,72巻」「1、2、3巻」) + ハイフン (「1-31巻」「1 -31巻」)
+  - `judgeText(rawName, normalizedIP)` 統一関数で SET/MAGAZINE+専用/GIFT/WRONG を1ループ判定
+- `scripts/comic-ip-normalize.json`: 大量拡充 (66 → 約100エントリ)
+  - SAKAMOTO DAYS → **サカモトデイズ** に key 変更（日本語検索ヒット対応）
+  - WITCHRIV ウィッチリヴ / バガボンド / ヴィンランド・サガ / SPY×FAMILY / ソウルイーター / ヘタリア / とんがり帽子のアトリエ / 日本三國 / 俺だけレベルアップな件 / 転生したらスライムだった件 / BORUTO -TWO BLUE VORTEX-（前作BORUTOとは別Group） / MAD / しのびごと / ふたりバス / ケントゥリア / 灰宮先輩は怖くてかわいい / 英雄機関 / 多数追加
+  - `魔男のイチ` の patterns に `魔界のイチ` を吸収
+  - `チェンソーマン` の正規表現を `チェ[ーン]*ソーマン` に拡張（「チェーンソーマン」も吸収）
+- `scripts/nightly-full.bat`: [10/11] に `comic-firstprint-data-fixes.mjs` を組み込み（毎晩 scan 後に自動で汚染除去 + Group統合 + normalize 適用）
+- `scripts/lib/comic-gemini-judge.mjs`: 未使用化（削除はせず、将来の画像認識用に残置）
+
+**理由**:
+- ユーザー指摘「テキスト分類はお前(Claude)、画像認識のAPIはジェミニ。なんで全部APIでやってんだよ」（2026-05-23 セッション内）
+- `feedback_use-self-for-text-classification.md` 違反の解消（前セッション 2026-05-22 のAIが Gemini text 判定フローを実装、本セッション中盤までそれを使い続けていた）
+- API 課金ゼロ化、判定ロジックは git tracked な regex でレビュー可能化
+
+**ユーザー承認**: 済（「全部やれ」明示指示）
+**影響範囲**: 全 comic-firstprint scan の判定品質、本番 comic.hobipedia.jp の表示品質、nightly 実行のAPI コスト
+**前事故との関係**: data-fixes.mjs は引き続き DELETE/TRUNCATE/列省略INSERT なし、UPDATE のみで実装
+**残課題**:
+- `lib/comic-gemini-judge.mjs` の正式削除（次セッション以降、画像認識に転用判断後）
+- Phase 0 で復活した 1028件のうち、Claude judge regex 漏れがあれば追加パターン拡充
+- `comic-firstprint-scan.mjs` の `normalizeIP()` 本体に装飾文字除去ロジックを統合（現状は data-fixes 側に依存）
