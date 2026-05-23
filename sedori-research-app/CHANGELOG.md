@@ -84,6 +84,19 @@
 **現状**: **廃案** — ユーザーから「業界常識通り GitHub に push してそれを viewer に使えばいい」指摘で、独自HTML生成スクリプト自体が車輪の再発明と判明。ファイルは未使用のまま残置 (削除は別途判断)
 **正しい運用**: `scripts/sample-one-can-badge.mjs` 等を GitHub に push 済 → `https://github.com/<account>/ai-skills/commits/master` 配下のcommit viewerが「サイト」相当
 
+## 🏷️ v0.2.0 (2026-05-23・コミックウェブ汚染除去 + Gemini text→Claude regex 統一)
+
+このバージョンは「2026-05-23 コミックウェブ改善セッション」の集大成。
+含まれる commits: `fafd9df` → `30084d1` → `c8ad88c` → `921d739` → `d46f2ae` → `24b0ee3`
+
+主要変更:
+- **新規**: `scripts/comic-firstprint-data-fixes.mjs`（UPDATE のみで汚染除去・Group統合）
+- **撤廃**: Gemini text 判定（scan / 2025-pickup-mercari-scan）→ Claude regex / Phase 0 で旧Gemini判定1028件を valid 復活
+- **拡充**: `comic-ip-normalize.json` 66 → 約100エントリ
+- **修正**: BLEACH 1巻 ASIN（書影違い）
+- **運用**: `nightly-full.bat` に data-fixes を組み込み毎晩自動汚染除去
+- **comic-firstprint-web**: `itemCount>0` フィルタ追加（空Group非表示）
+
 ### 2026-05-23 (cleanup事故翌セッション・コミックウェブ改善)
 **ファイル**: `scripts/comic-firstprint-data-fixes.mjs` (新規)
 **変更**: ComicFirstPrint データ汚染の一括修正スクリプトを追加
