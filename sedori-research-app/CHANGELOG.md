@@ -83,3 +83,16 @@
 **ユーザー承認**: 未 (廃案)
 **現状**: **廃案** — ユーザーから「業界常識通り GitHub に push してそれを viewer に使えばいい」指摘で、独自HTML生成スクリプト自体が車輪の再発明と判明。ファイルは未使用のまま残置 (削除は別途判断)
 **正しい運用**: `scripts/sample-one-can-badge.mjs` 等を GitHub に push 済 → `https://github.com/<account>/ai-skills/commits/master` 配下のcommit viewerが「サイト」相当
+
+### 2026-05-23 (cleanup事故翌セッション・コミックウェブ改善)
+**ファイル**: `scripts/comic-firstprint-data-fixes.mjs` (新規)
+**変更**: ComicFirstPrint データ汚染の一括修正スクリプトを追加
+- Phase1: セット品検出 → `excludedReason='text:set品'` UPDATE (22件)
+- Phase2: 雑誌混入検出 → `excludedReason='text:雑誌混入'` UPDATE (1件・モーニング雑誌4号)
+- Phase3: 装飾文字/不可視文字 normalize 統合 (8件・遊⭐︎戯⭐︎王→遊戯王 / ✴︎ ✴︎鋼の錬金術師→鋼の錬金術師 等)
+- Phase4: 同IP×同volume の重複Group統合 (113 IP×巻・136子Group の Item を親Group に UPDATE)
+- Phase5: 全Group の `itemCount/priceMedian/Min/Max` を再計算 UPDATE (samples は触らない)
+**理由**: ユーザー指摘「1巻複数あるのは許してない」「セット品を素材として使ってる」「絶対混ざらないはずのごみ（モーニング雑誌混入）」「遊戯王の表記揺れ」の4種汚染を一括対処
+**ユーザー承認**: 済 (本セッションで「コミックウェブ直して改善しろ」明示指示 + DRY RUN 結果提示→本走承認)
+**前事故との関係**: 2026-05-23 cleanup 事故 (`comic-firstprint-cleanup.mjs` で Group `DELETE FROM`→列省略INSERT で16列消失) の再発防止のため、本スクリプトは **DELETE FROM / TRUNCATE / 列省略INSERT 一切なし、UPDATE のみで実装**
+**影響範囲**: 既存運用中ロジック (`comic-firstprint-scan.mjs`) には触らず、別ファイルで独立実装。nightly に組み込むかは別判断
