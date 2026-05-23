@@ -84,6 +84,30 @@
 **現状**: **廃案** — ユーザーから「業界常識通り GitHub に push してそれを viewer に使えばいい」指摘で、独自HTML生成スクリプト自体が車輪の再発明と判明。ファイルは未使用のまま残置 (削除は別途判断)
 **正しい運用**: `scripts/sample-one-can-badge.mjs` 等を GitHub に push 済 → `https://github.com/<account>/ai-skills/commits/master` 配下のcommit viewerが「サイト」相当
 
+## 🏷️ v0.4.0 (2026-05-23・magazine 汚染除去 (専用出品・復刻版))
+
+### 変更
+- **新規**: `scripts/weekly-magazine-data-fixes.mjs`
+  - WeeklyMagazineItem に `excludedReason` カラム追加 (ALTER, 非破壊)
+  - 専用出品検出（「○○様」「a*7様」「さ*様」「N J 様」等）
+  - 復刻版検出（「復刻版」「復刻パック」等）
+  - 全Group の itemCount/priceMedian/priceMin/priceMax/priceP90 を再計算 UPDATE
+  - **DELETE/TRUNCATE/列省略INSERT は一切なし、UPDATE のみ**
+
+### 結果
+- 専用出品: 22件除外（a*7様 ¥3,100,000 や c*様 ¥150,000 等の異常価格を含む）
+- 復刻版: 20件除外（1997/34号 ONE PIECE 新連載号の復刻版混入を除去）
+- Group集計: 657 (有効) / 3529 (item=0) — 3529 は 大半が元から低 itemCount の Group + 一部除外で 0 化
+
+### 連動 downstream
+- `comic-firstprint-web` v0.2.1 で `getAllMagazineGroups` / `getMagazineGroupsByCoverIP` に itemCount>0 フィルタ追加
+
+### 未対処（次回以降）
+- 号間違い検知（タイトルに別号番号明示の出品: 例「1999年52・53号 41号」型）
+- ヒーロー画像 マスタ coverImageUrl 優先化（[handoff_magazine-route-pollution.md] Step 4）
+
+---
+
 ## 🏷️ v0.3.0 (2026-05-23・normalize ライブラリ統一 + scan時 装飾文字除去組込)
 
 ### 変更
