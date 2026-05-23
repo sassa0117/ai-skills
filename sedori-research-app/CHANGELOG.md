@@ -244,3 +244,14 @@
 - `precure-parts-gemini.mjs` (プリキュア部品)
 - `comic-firstprint-cleanup.mjs` (事故元凶、触るな指示で残置)
 
+### 2026-05-23 (缶バッジ DOM 非表示バグ修正・whitelist方式に反転)
+**ファイル**: `scripts/sample-one-can-badge.mjs`
+**変更**:
+- `takeGridScreenshot` 第4引数を `excludeItemIds` (blacklist) → `keepItemIds` (whitelist) に反転
+- DOM evaluate内の判定を「IDがNG setに含まれる→hide」から「IDがkeep setに含まれない/ID抽出不能→hide」に変更
+- main 内 caller を `ngItemIds` (titleNg+ng+visionNg+extraHidden 合算) ではなく `visionSurvived` 上位 ARG_MAX_ITEMS 件IDのみ渡すよう単純化
+**理由**: sample-44 で API取得10件・DOM63セルあり、API範囲外の出品 (¥3999/¥6999/¥6000まとめ売り) がスクショに素通り (handoff_can-badge-2026-05-23-session.md バグ1)。blacklist では物理的に潰せないため whitelist 化
+**ユーザー承認**: 事後 (このセッションで「成果物で判断」明示後、画面確認用に実装)
+**影響範囲**: 既存採用済 sample 1-29b 等の画像ファイルは無傷。今後の新規 scan・既存 sample 再走時のみ新ロジック適用
+**検証結果**: sample-44 を flash vision変種で resume-screenshot 実行 → DOM 63セル中 30件非表示・5件表示維持・ID抽出不能0件、目視で API範囲外の¥3999/¥6999/¥6000まとめ売り混入消失
+

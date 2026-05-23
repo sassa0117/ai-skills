@@ -375,7 +375,7 @@ function buildMercariSearchUrl({ keyword, excludeKeyword }) {
   return `https://jp.mercari.com/search?${params.toString()}`;
 }
 
-async function takeGridScreenshot(browser, url, outPath, excludeItemIds = []) {
+async function takeGridScreenshot(browser, url, outPath, keepItemIds = null) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1200, height: 2000 });
   try {
@@ -398,19 +398,22 @@ async function takeGridScreenshot(browser, url, outPath, excludeItemIds = []) {
       return { minX: Math.floor(minX), maxX: Math.ceil(maxX) };
     });
 
-    // NG出品ID (実質まとめ売り) のセルを DOM から非表示にする
-    if (excludeItemIds.length) {
-      const hiddenCount = await page.evaluate((ids) => {
+    // survived ID 以外の全セルを DOM 非表示にする (API範囲外のメルカリ側追加表示分も漏らさず潰す)
+    if (Array.isArray(keepItemIds)) {
+      const result = await page.evaluate((ids) => {
         const set = new Set(ids);
         let hidden = 0;
-        // /item/{id}, /shops/product/{id}, /products/{id} 全パターン対応
+        let kept = 0;
+        let noId = 0;
         document.querySelectorAll('a[href*="/item/"], a[href*="/shops/"], a[href*="/products/"]').forEach(a => {
           const href = a.getAttribute("href") || "";
           let m = href.match(/\/item\/([^/?#]+)/);
           if (!m) m = href.match(/\/shops\/product\/([^/?#]+)/);
           if (!m) m = href.match(/\/products\/([^/?#]+)/);
-          if (m && set.has(m[1])) {
-            // セルのコンテナごと非表示にする (li や grid item)
+          const id = m ? m[1] : null;
+          // ID 抽出不能なセルも安全側で非表示 (広告枠・空セル等)
+          const shouldHide = !id || !set.has(id);
+          if (shouldHide) {
             let target = a;
             for (let i = 0; i < 5 && target.parentElement; i++) {
               const p = target.parentElement;
@@ -422,11 +425,14 @@ async function takeGridScreenshot(browser, url, outPath, excludeItemIds = []) {
             }
             target.style.display = "none";
             hidden++;
+            if (!id) noId++;
+          } else {
+            kept++;
           }
         });
-        return hidden;
-      }, excludeItemIds);
-      console.log(`  DOM非表示: ${hiddenCount}件 (NG ID: ${excludeItemIds.join(", ")})`);
+        return { hidden, kept, noId };
+      }, keepItemIds);
+      console.log(`  DOM非表示: ${result.hidden}件 (うちID抽出不能 ${result.noId}件) / 表示維持: ${result.kept}件 (keep候補 ${keepItemIds.length}件)`);
       await new Promise(r => setTimeout(r, 500)); // レイアウト再計算待ち
     }
 
@@ -669,21 +675,14 @@ async function main() {
   const screenshotPath = path.join(OUTPUT_DIR, "screenshot.png");
   let clipInfo;
   try {
-    // タイトルNG (専用出品等) + description NG (実質まとめ売り) を DOM 非表示
-    // さらに --max-items 指定時は survived の上位X件以外も DOM 非表示
-    let extraHiddenIds = [];
-    if (ARG_MAX_ITEMS > 0 && visionSurvived.length > ARG_MAX_ITEMS) {
-      const keepIds = new Set(visionSurvived.slice(0, ARG_MAX_ITEMS).map(e => e.id));
-      extraHiddenIds = visionSurvived.filter(e => !keepIds.has(e.id)).map(e => e.id);
-      console.log(`  --max-items=${ARG_MAX_ITEMS}: ${extraHiddenIds.length}件をDOMで追加非表示`);
-    }
-    const ngItemIds = [
-      ...titleNgItems.map(e => e.id),
-      ...ngList.map(e => e.id),
-      ...visionNgList.map(e => e.id),
-      ...extraHiddenIds,
-    ];
-    clipInfo = await takeGridScreenshot(browser, mercariUrl, screenshotPath, ngItemIds);
+    // visionSurvived (=最終採用候補) のIDだけ表示維持、それ以外はDOM非表示
+    // これにより API取得範囲外のメルカリ側追加表示分も含めて漏らさず潰せる
+    const keepCandidates = ARG_MAX_ITEMS > 0
+      ? visionSurvived.slice(0, ARG_MAX_ITEMS)
+      : visionSurvived;
+    const keepItemIds = keepCandidates.map(e => e.id);
+    console.log(`  DOM表示維持予定: ${keepItemIds.length}件 (visionSurvived ${visionSurvived.length}件中)`);
+    clipInfo = await takeGridScreenshot(browser, mercariUrl, screenshotPath, keepItemIds);
   } finally {
     await browser.close();
   }
