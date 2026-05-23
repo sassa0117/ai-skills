@@ -24,6 +24,52 @@
 
 ---
 
+## 🏷️ v0.5.0 (2026-05-23・コミックウェブ改善 残作業8件一括完走)
+
+handoff: handoff_comic-improvement-2026-05-23.md 残作業 ①〜⑧ + ASIN追加21件。
+
+### 変更ファイル
+- **`scripts/comic-firstprint-apply-amazon-covers.mjs`**: ASIN_MAP に 21件追加（DB|24=4088514149, DB|27=4088514173, DB|17=4088516141, 葬送のフリーレン|1, 俺だけレベルアップな件|1, サカモトデイズ|1, バガボンド|1, ヴィンランド・サガ|1, BORUTO -TWO BLUE VORTEX-|1, BORUTO|1, NARUTO|2, HUNTER×HUNTER|2, ONE PIECE|8, SLAM DUNK|2, 進撃の巨人|2, 僕のヒーローアカデミア|2, ワンパンマン|2, WITCHRIV ウィッチリヴ|1, ポケットモンスタースペシャル|2, 家庭教師ヒットマンREBORN!|1, ヘタリア|1）。書影カバー 488/878 → **562/878** (64%)、ASIN付き 67→**144**
+- **`scripts/comic-firstprint-fetch-covers.mjs`**: 楽天 `pickVol1` のサブタイトル付き派生作品誤マッチ防止（⑦）。DERIVATIVE_SUFFIXES に「Can't / ノベル / 小説 / Stories / Spirits / Novelize / アンソロジー / ZOMBIE / ピカチュウ」追加、加えて「{IP}-スペース-英字12文字以上」の長サブタイトルを派生扱い
+- **`scripts/comic-ip-normalize.json`**: ヴィンランド・サガに中黒許容追加、SPY×FAMILYに「スパイファミリー」追加、新規IP 4種（炎炎ノ消防隊 / 史上最強の弟子ケンイチ / キングダムハーツ チェイン オブ メモリーズ）（⑧）
+- **`scripts/lib/comic-normalize.mjs`**: PREFIX_RE に「単行本/送料無料/有り」追加、BRACKET_HEAD/TAIL_RE に「《》〈〉〔〕」追加、巻数範囲末尾削除 VOL_RANGE_TAIL_RE 追加（⑧）
+- **`scripts/comic-renormalize-items.mjs`** (NEW=git untracked から baseline化): NOISE_WORDS に「単行本/有り/セット/全巻」追加、装飾文字に《》〈〉〔〕「」『』、巻数範囲削除（⑧）
+- **`scripts/weekly-magazine-data-fixes.mjs`**: Phase 2.5 号番号ミスマッチ検出を追加。rawName から年・号を抽出→Group値と照合→不一致 Item を excludedReason='text:号番号ミスマッチ' UPDATE（②）。非数値Group（"50周年記念号"等）はスキップ
+- **`scripts/lib/db-history.mjs`** (NEW): UPDATE時に旧値を `<column>_history` JSON配列に保存する補助lib。`ensureHistoryColumns` / `updateWithHistory` の2関数。directly 2026-05-23 cleanup事故への防御層（④）。Group.ipName/coverUrl/asin/priceMedian/tags + Magazine.coverIP/priceMedian/issueNumber に history カラム自動付与
+- **`scripts/comic-firstprint-relink-groups.mjs`** (NEW): Item.normalizedIP の多数決で Group.ipName を書き換える。安全装置: canonical IP一致 OR 既存値の strict subset (ノイズ削減方向) のみ採用。renormalize-items 後の Group 反映用。db-history 経由でUPDATE → _history に旧値追記
+- **`scripts/comic-firstprint-scan-exclude.mjs`** (NEW): 書店巡回 ② 除外キーワード方式 のスキャナ スタブ（③）。DRY-RUN がデフォルト（除外語の組み立て+件数試算のみ）、`--execute` で本走（メルカリAPI叩く）。ComicFirstPrintScan に `flowType` / `excludeKeyword` カラム自動追加。新規作品掘り用
+- **`scripts/comic-firstprint-apply-amazon-covers.mjs`**: サカモトデイズ|1 (DB日本語表記対応)
+
+### 数値成果
+| 指標 | v0.4.0 末 | v0.5.0 |
+|---|---|---|
+| ComicFirstPrintGroup 書影カバー | 488/878 (55%) | **562/878 (64%)** |
+| ASIN_MAP 付与 | 67件 | **144件** |
+| ASIN_MAP エントリ数 | 36 | **57** |
+| normalize map IP数 | 約100 | **104** (4件追加) |
+| comic-normalize lib prefix/bracket | 11語 / 3括弧 | **14語 / 6括弧** |
+| WeeklyMagazineItem excludedReason 種別 | 専用/復刻のみ | **+ 号番号ミスマッチ** |
+| _history カラム | 0 | **8カラム (Group2テーブル×主要4列)** |
+| ComicFirstPrintScan.flowType | なし | **periodic/exclude/pinpoint 区別可能** |
+
+### nightly 影響
+- nightly-full.bat の data-fixes ステップで Phase 2.5 が自動実行される
+- relink-groups は nightly に未統合（手動実行のみ）→ 次セッション組込判断
+
+### 残課題 (v0.6.0 候補)
+- ASIN_MAP マッチなし残 ~330件 (392→ さらに集計後再計算): ドラゴンボール他巻数 (3,19,20,21,23,26,28,31,33,35,38)、ポケットモンスタースペシャル 3,6,7,23,24、ONE PIECE 9、ヴィンランド・サガ 2 など
+- magazine の coverImageUrl 個別投入（今回は ComicFirstPrintGroup.coverUrl からの IP単位フォールバックのみ）
+- ③ exclude-flow の本走判断＋nightly統合判断
+- ④ history util を data-fixes 各 Phase の UPDATE にも適用拡大
+- ② 号番号ミスマッチ検出はテストデータ 0件 (本番は綺麗)、実証はリアルタイム scan 後
+
+### 触禁リスト (v0.4.0 から継続)
+- `scripts/comic-firstprint-cleanup.mjs` (2026-05-23 事故元凶)
+- `scripts/trend-scan.mjs` (feedback_no-trend-scan-automation.md)
+- 本番Neon直 DDL (schema migration は comic-firstprint-web/prisma/schema.prisma 経由)
+
+---
+
 ## 2026-05-22〜23 復元エントリー (untracked期間の遡及記録)
 
 > ⚠️ 2026-05-23 時点で `scripts/sample-one-can-badge.mjs` が **git untracked = 履歴ゼロ** と判明。

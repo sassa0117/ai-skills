@@ -25,11 +25,12 @@ const NORMALIZE_MAP_PATH = path.join(__dirname, "..", "comic-ip-normalize.json")
 export const DECORATION_RE = /[✴✴︎★☆⭐⭐︎✨※♪✿❤❥＊*◆■□◇▲△▽▼◎●○♡♥◉◈❖✦✧❀✼✽❁]/g;
 export const INVISIBLE_RE = /[​-‍﻿⁠]/g;
 
-const PREFIX_RE = /^(漫画|本|品|新品|中古|美品|希少|レア|初版本|印刷版|コミック|ノベル|激)\s+/i;
+const PREFIX_RE = /^(漫画|本|品|新品|中古|美品|希少|レア|初版本|印刷版|コミック|ノベル|激|単行本|送料無料|有り)\s+/i;
 const DATE_PREFIX_RE = /^\d{1,2}\/\d{1,2}\s+/;
 const NUM_PREFIX_RE = /^\d+\s+(?=[ぁ-んァ-ヶ一-龯])/;
-const BRACKET_HEAD_RE = /^[「『【]+/;
-const BRACKET_TAIL_RE = /[」』】]+$/;
+const BRACKET_HEAD_RE = /^[「『【《〈〔]+/;
+const BRACKET_TAIL_RE = /[」』】》〉〕]+$/;
+const VOL_RANGE_TAIL_RE = /\s*\d+\s*[～〜~ｰー-]\s*$/;
 
 export function normalizeStrip(s) {
   if (!s) return s;
@@ -41,6 +42,7 @@ export function normalizeStrip(s) {
   out = out.replace(NUM_PREFIX_RE, "");
   out = out.replace(BRACKET_HEAD_RE, "");
   out = out.replace(BRACKET_TAIL_RE, "");
+  out = out.replace(VOL_RANGE_TAIL_RE, "");
   out = out.replace(/\s+/g, " ").trim();
   return out;
 }

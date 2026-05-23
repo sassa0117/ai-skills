@@ -111,12 +111,22 @@ const DERIVATIVE_SUFFIXES = [
   "スーパー", "超", "外伝", "番外編", "別冊", "スピンオフ", "特別編",
   "side B", "THE FIRST", "PROLOGUE", "EPILOGUE",
   "100 YEARS QUEST", "クレイジー・D", "アナザー", "ANOTHER",
+  // ノベル/スピンオフ系（v0.6.0 追加・BLEACH「Can't Fear Your Own World」誤マッチ対策）
+  "Can't", "ノベル", "小説", "ノベライズ", "Novelize", "novelize",
+  "Stories", "ストーリーズ", "STORIES", "Story", "Spirits",
+  "公式ファンブック", "コミックガイド", "アンソロジー",
+  "ZOMBIE", "ピカチュウ",
 ];
 function looksLikeDerivative(title, ipName) {
   const idx = title.indexOf(ipName);
   if (idx === -1) return false;
-  const after = title.slice(idx + ipName.length, idx + ipName.length + 25);
-  return DERIVATIVE_SUFFIXES.some(s => after.toLowerCase().includes(s.toLowerCase()));
+  const after = title.slice(idx + ipName.length, idx + ipName.length + 35);
+  if (DERIVATIVE_SUFFIXES.some(s => after.toLowerCase().includes(s.toLowerCase()))) return true;
+  // 「{IP}スペース文字8文字以上スペース」が来る場合はサブタイトル付き派生扱い (例: "BLEACH Can't Fear Your Own World 1")
+  // 原作は通常 "{IP} 1" "{IP}(1)" "{IP} 第1巻" 等で、サブタイトル長は短い
+  const subtitleMatch = after.match(/^[\s\-―ー]+([A-Za-z][\w'\s]{12,})/);
+  if (subtitleMatch) return true;
+  return false;
 }
 
 function pickCoverForVolume(items, ipName, volume, tagStr) {
