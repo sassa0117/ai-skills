@@ -32,6 +32,7 @@ const db = new Database(path.join(PROJECT_ROOT, "prisma", "dev.db"));
 
 // WebSearch結果から特定したASIN（IP|巻 [|版]）
 const ASIN_MAP = {
+  "BLEACH|1":                                          "4088732138", // 久保帯人・ジャンプコミックス・2002年1月。楽天pickVol1が小説スピンオフ「Can't Fear Your Own World」を誤選択した分の補正
   "BLUE LOCK|11":                                      "B08KQ5NKCR", // Kindle版（紙11巻Amazon在庫なし）
   "FAIRY TAIL|1":                                      "4063637719",
   "GTO|1":                                             "4063124118",

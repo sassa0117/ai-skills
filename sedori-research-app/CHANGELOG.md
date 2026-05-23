@@ -96,3 +96,10 @@
 **ユーザー承認**: 済 (本セッションで「コミックウェブ直して改善しろ」明示指示 + DRY RUN 結果提示→本走承認)
 **前事故との関係**: 2026-05-23 cleanup 事故 (`comic-firstprint-cleanup.mjs` で Group `DELETE FROM`→列省略INSERT で16列消失) の再発防止のため、本スクリプトは **DELETE FROM / TRUNCATE / 列省略INSERT 一切なし、UPDATE のみで実装**
 **影響範囲**: 既存運用中ロジック (`comic-firstprint-scan.mjs`) には触らず、別ファイルで独立実装。nightly に組み込むかは別判断
+
+### 2026-05-23 (cleanup事故翌セッション・BLEACH 1巻 書影違い修正)
+**ファイル**: `scripts/comic-firstprint-apply-amazon-covers.mjs`
+**変更**: `ASIN_MAP` に `"BLEACH|1": "4088732138"` を追加 (1行)
+**理由**: 楽天Books API の `pickVol1` が BLEACH 1巻として小説スピンオフ「Can't Fear Your Own World」(ISBN 9784087034240) を誤選択し、本番Webで BLEACH 1巻ページに別作品の表紙が出ていた。Amazon ASIN を明示指定することで、apply-amazon-covers.mjs 再走時に正しい漫画版1巻書影に上書きする
+**ユーザー承認**: 済 (本セッションで「ブリーチ初版、1巻書影違う」明示指摘 → WebSearch で正規 ASIN特定 → 追加)
+**残課題**: 同型のバグ (楽天 pickVol1 が誤選択) が他IPにもある可能性。BLEACH 以外は本セッション対処範囲外
