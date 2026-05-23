@@ -133,3 +133,20 @@
 - `lib/comic-gemini-judge.mjs` の正式削除（次セッション以降、画像認識に転用判断後）
 - Phase 0 で復活した 1028件のうち、Claude judge regex 漏れがあれば追加パターン拡充
 - `comic-firstprint-scan.mjs` の `normalizeIP()` 本体に装飾文字除去ロジックを統合（現状は data-fixes 側に依存）
+
+### 2026-05-23 (Gemini text 撤廃漏れ修正: comic-2025-pickup-mercari-scan.mjs)
+**ファイル**: `scripts/comic-2025-pickup-mercari-scan.mjs`
+**変更**: Gemini import (line 24) / SKIP_GEMINI/GEMINI_BATCH/GEMINI_CONCURRENCY フラグ / Phase B 全体（line 175-209）を撤廃
+**理由**: 直前commit (921d739) で「API課金ゼロ化」と書いたが、書店巡回ガイド用 scan (comic-2025-pickup-mercari-scan.mjs) にも Gemini text 判定が残っていた撤廃漏れ。ユーザー指摘「API課金ゼロ化　あ？」で発覚
+**ユーザー承認**: 済 (本セッションで「全部やれ・API でやってんじゃねえ」)
+**残存Gemini (画像認識用、撤廃対象外)**:
+- `batch-gemini-match.mjs` (駿河屋画像照合)
+- `sample-one-can-badge.mjs:267` (Vision)
+- `match-null-url-image.mjs` (画像)
+- `test-image-match.mjs` (画像)
+**text分類疑い (別タスク・本セッションスコープ外)**:
+- `can-badge-article-scan.mjs:202` (缶バッジ記事用)
+- `match-null-url-name.mjs` (catalog 名前マッチ)
+- `precure-parts-gemini.mjs` (プリキュア部品)
+- `comic-firstprint-cleanup.mjs` (事故元凶、触るな指示で残置)
+
