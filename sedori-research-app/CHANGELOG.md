@@ -75,3 +75,11 @@
 - **`scripts/sample-one-can-badge.mjs`**: session1 (2026-05-18) で初回フロー実装、その後 session2/3/4 で多数改修
 - **`scripts/scan-broad-titles.mjs`**: session3 (2026-05-22) で新規追加・3クエリ並行は実装途中
 - 全部 untracked = git 履歴ゼロ → このコミットで初回 track 開始
+
+### 2026-05-23 (session4 続き・AI改修ログサイト検討)
+**ファイル**: `scripts/generate-ai-log.mjs`
+**変更**: 新規ファイル作成 (git log + CHANGELOG.md を読んで HTML 自動生成するスクリプト)
+**理由**: ユーザー要望「AI改修記録を目視できるサイト」への一次案
+**ユーザー承認**: 未 (廃案)
+**現状**: **廃案** — ユーザーから「業界常識通り GitHub に push してそれを viewer に使えばいい」指摘で、独自HTML生成スクリプト自体が車輪の再発明と判明。ファイルは未使用のまま残置 (削除は別途判断)
+**正しい運用**: `scripts/sample-one-can-badge.mjs` 等を GitHub に push 済 → `https://github.com/<account>/ai-skills/commits/master` 配下のcommit viewerが「サイト」相当
