@@ -41,6 +41,7 @@ const ASPECT_RATIO = (() => {
 })();
 // --resume-screenshot: 既存 items-*.json を読んで Step 3 (スクショ) と Step 4 (HTML) だけ走らせる
 const ARG_RESUME_SCREENSHOT = argv.includes("--resume-screenshot");
+const ARG_VISION_MODEL = getArg("--vision-model", "gemini-2.5-flash-lite");
 
 const OUTPUT_DIR = path.join(PROJECT_ROOT, "output", "can-badge", ARG_OUTPUT);
 fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -341,7 +342,7 @@ function applyVisionGuard(v) {
   return v;
 }
 
-async function classifyByVision(items, concurrency = 4) {
+async function classifyByVision(items, concurrency = 4, model = "gemini-2.5-flash-lite") {
   const results = new Array(items.length);
   let idx = 0;
   async function worker() {
@@ -350,7 +351,7 @@ async function classifyByVision(items, concurrency = 4) {
       const it = items[i];
       try {
         const { base64, mime } = await fetchImageAsBase64(it.thumbnailUrl);
-        const v = await callGeminiVision(base64, mime, VISION_PROMPT);
+        const v = await callGeminiVision(base64, mime, VISION_PROMPT, model);
         results[i] = { ...it, vision: applyVisionGuard(v) };
       } catch (e) {
         results[i] = { ...it, vision: { kind: "unknown", error: e.message } };
@@ -629,8 +630,8 @@ async function main() {
     // Step 1.6: Gemini Vision で写真ベースまとめ売り判定
     visionSurvived = survived;
     if (!ARG_NO_VISION && GEMINI_KEY && survived.length > 0) {
-      console.log(`\nStep 1.6: Gemini Vision 写真判定 (n=${survived.length}, gemini-2.5-flash-lite)`);
-      const classified = await classifyByVision(survived, 4);
+      console.log(`\nStep 1.6: Gemini Vision 写真判定 (n=${survived.length}, ${ARG_VISION_MODEL})`);
+      const classified = await classifyByVision(survived, 4, ARG_VISION_MODEL);
       // unknown は安全側で multi 扱い（API失敗時に single 漏れを防ぐ）
       visionNgList = classified.filter(c => c.vision?.kind === "multi" || c.vision?.kind === "unknown");
       visionSurvived = classified.filter(c => c.vision?.kind === "single");
