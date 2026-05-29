@@ -239,6 +239,7 @@ const NOISE_WORDS = [
   "ジャンパラ付き","ジャンパラ",
   "送料無料","即購入","即決","匿名配送","早い物勝ち","レア","希少","貴重","美麗","綺麗",
   "良品","中古","used","USED","新刊","旧版","新装版",
+  "PSA","BGS","CGC","ARS","漫画鑑定","鑑定品","グレーディング","グレード付",
 ];
 
 function extractIP(name) {
@@ -250,6 +251,7 @@ function extractIP(name) {
   s = s.replace(/[【\[（\(】\]）\)※☆★◆●○・]/g, " ");
   for (const w of NOISE_WORDS) s = s.split(w).join(" ");
   s = s.replace(/\d{1,3}\s*巻/g, " ").replace(/Vol\.?\s*\d+/gi, " ");
+  s = s.replace(/\b\d+(?:\.\d+)?\b/g, " "); // 鑑定グレード数値 (9.8 等) を除去
   s = s.replace(/\s+/g, " ").trim();
   return s || null;
 }

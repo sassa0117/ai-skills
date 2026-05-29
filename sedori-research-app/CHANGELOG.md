@@ -24,6 +24,21 @@
 
 ---
 
+## 2026-05-29 (鑑定品ラベルがIPに混入する問題の修正)
+**ファイル**: `scripts/comic-firstprint-scan.mjs`
+**変更**:
+- (1) `NOISE_WORDS` 末尾に追加: `"PSA","BGS","CGC","ARS","漫画鑑定","鑑定品","グレーディング","グレード付"`
+- (2) `extractIP()` 内、巻数除去の直後に追加: `s = s.replace(/\b\d+(?:\.\d+)?\b/g, " "); // 鑑定グレード数値 (9.8 等) を除去`
+
+**理由**:
+本番カードに「BGS 漫画鑑定 9.8 剣闘士AtoZ」が ipName としてベタ流入し1巻TOP3に単発で居座る事象。
+`extractCondition()` は PSA/BGS/CGC + グレード数値を `condition="鑑定品"` / `gradeRank="BGS 9.8"` に正しく抽出しているが、`extractIP()` 側で除去パターンに含まれず IP文字列に「BGS / 漫画鑑定 / 9.8」が残留 → 純粋作品名（剣闘士AtoZ）と分離されない問題。仕様 §3.6（IPからノイズ語除去）の趣旨に沿った追加。
+
+**ユーザー承認**: 済（quote 提示後「はい」）
+**影響範囲**: 次回scan以降の Item.normalizedIP に反映。既存Itemへの反映は data-fixes Phase 3 (normalize 再適用) を別途実行 → Phase 3.5 が Group.ipName を多数派追従 UPDATE で同期（Group の DELETE/INSERT は発生しない）
+
+---
+
 ## 🏷️ v0.5.0 (2026-05-23・コミックウェブ改善 残作業8件一括完走)
 
 handoff: handoff_comic-improvement-2026-05-23.md 残作業 ①〜⑧ + ASIN追加21件。
