@@ -2,714 +2,417 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f7f5f0">
 <meta name="color-scheme" content="light only">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="仕入れラベル">
 <title>仕入れラベル</title>
 <style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
     color-scheme: light only;
-    --bg: #f7f5f0;
-    --card: #ffffff;
-    --ink: #2a2723;
-    --ink-sub: #7a7269;
-    --line: #e6e1d6;
-    --accent: #c8704b;
-    --accent-deep: #a85530;
-    --ok: #5a8a3a;
-    --warn: #c0392b;
-    --shadow: 0 1px 2px rgba(60,40,20,.06), 0 4px 12px rgba(60,40,20,.06);
+    --bg:#f7f5f0; --card:#fff; --ink:#2a2723; --sub:#8a8278;
+    --line:#e6e1d6; --accent:#c8704b; --accent-d:#a85530; --warn:#c0392b;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #f7f5f0;
-      --card: #ffffff;
-      --ink: #2a2723;
-      --ink-sub: #7a7269;
-      --line: #e6e1d6;
-    }
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body {
-    margin: 0; padding: 0; background: var(--bg); color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
-    font-size: 15px; line-height: 1.55;
-    overscroll-behavior-y: contain;
-  }
-  body { padding-bottom: env(safe-area-inset-bottom); }
+  html,body { margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    font-size:15px; line-height:1.5; }
 
-  header {
-    position: sticky; top: 0; z-index: 10;
-    background: var(--bg);
-    padding: 14px 16px 10px;
-    padding-top: calc(14px + env(safe-area-inset-top));
-    border-bottom: 1px solid var(--line);
-  }
-  .head-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: .02em; }
-  h1 .count { font-weight: 500; color: var(--ink-sub); margin-left: 6px; font-size: 14px; }
+  header { position:sticky; top:0; z-index:10; background:var(--bg);
+    padding:14px 16px 8px; padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid var(--line); }
+  .head-row { display:flex; align-items:center; justify-content:space-between; }
+  h1 { margin:0; font-size:17px; font-weight:700; }
+  h1 .n { color:var(--sub); font-weight:500; margin-left:6px; font-size:14px; }
+  .menu-btn { background:none; border:none; font-size:22px; padding:4px 6px; cursor:pointer; color:var(--ink); }
 
-  .search {
-    display: block; width: 100%; margin-top: 10px;
-    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
-    background: var(--card); font-size: 15px; color: var(--ink);
-  }
-  .search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .search { width:100%; margin-top:10px; padding:10px 12px;
+    border-radius:10px; border:1px solid var(--line); background:var(--card);
+    font-size:15px; color:var(--ink); }
+  .search:focus { outline:2px solid var(--accent); outline-offset:-1px; }
 
-  .filter-row {
-    display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px 6px;
-    scrollbar-width: none;
-  }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .chip {
-    flex: 0 0 auto;
-    padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line);
-    background: var(--card); color: var(--ink-sub); font-size: 13px;
-    cursor: pointer; white-space: nowrap;
-  }
-  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .chips { display:flex; gap:6px; overflow-x:auto; padding:10px 16px 4px; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip { flex:0 0 auto; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--line); background:var(--card); color:var(--sub);
+    font-size:13px; cursor:pointer; white-space:nowrap; }
+  .chip.on { background:var(--ink); color:#fff; border-color:var(--ink); }
 
-  main { padding: 8px 12px 96px; }
+  main { padding:8px 12px 100px; }
+  .list { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; cursor:pointer; box-shadow:0 1px 2px rgba(60,40,20,.05),0 4px 10px rgba(60,40,20,.04); }
+  .card .thumb { width:100%; aspect-ratio:1/1; background:#ece7dc; object-fit:cover; display:block; }
+  .card .thumb.empty { display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:11px; }
+  .card .b { padding:8px 10px 10px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:4px;
+    background:var(--accent); color:#fff; font-size:11px; font-weight:600;
+    margin-bottom:5px; max-width:100%; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; }
+  .name { font-size:13px; font-weight:600; margin:0;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 
-  .list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-    overflow: hidden; cursor: pointer; box-shadow: var(--shadow);
-    display: flex; flex-direction: column;
-  }
-  .card .thumb {
-    width: 100%; aspect-ratio: 1/1; background: #ece7dc;
-    display: block; object-fit: cover;
-  }
-  .card .thumb.empty {
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-sub); font-size: 12px;
-  }
-  .card .body { padding: 8px 10px 10px; }
-  .card .store {
-    display: inline-block; padding: 2px 8px; border-radius: 4px;
-    background: var(--accent); color: #fff; font-size: 11px; font-weight: 600;
-    margin-bottom: 6px; max-width: 100%;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .card .name {
-    font-size: 13px; font-weight: 600; color: var(--ink); margin: 0 0 4px;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .card .meta { font-size: 12px; color: var(--ink-sub); }
-  .card .meta .profit { color: var(--ok); font-weight: 600; }
+  .empty { text-align:center; padding:60px 20px; color:var(--sub); }
+  .empty .em { font-size:36px; margin-bottom:8px; }
 
-  .empty-state {
-    text-align: center; padding: 60px 20px; color: var(--ink-sub);
-  }
-  .empty-state .em { font-size: 36px; margin-bottom: 12px; }
+  .fab { position:fixed; right:20px; bottom:calc(20px + env(safe-area-inset-bottom));
+    width:56px; height:56px; border-radius:50%; background:var(--accent);
+    color:#fff; border:none; font-size:30px; line-height:1; cursor:pointer;
+    box-shadow:0 4px 16px rgba(168,85,48,.4); z-index:20;
+    display:flex; align-items:center; justify-content:center; }
+  .fab:active { background:var(--accent-d); }
 
-  .fab {
-    position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom));
-    width: 56px; height: 56px; border-radius: 50%;
-    background: var(--accent); color: #fff; border: none;
-    box-shadow: 0 4px 16px rgba(168,85,48,.4);
-    font-size: 30px; line-height: 1; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 20;
-  }
-  .fab:active { background: var(--accent-deep); }
+  .bg { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100; display:none; }
+  .bg.on { display:block; }
+  .sheet { position:fixed; left:0; right:0; bottom:0; max-height:92dvh;
+    background:var(--bg); border-radius:16px 16px 0 0; z-index:101;
+    transform:translateY(100%); transition:transform .25s ease;
+    display:flex; flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom); }
+  .sheet.on { transform:translateY(0); }
+  .sh-head { display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid var(--line); }
+  .sh-head h2 { margin:0; font-size:16px; font-weight:700; }
+  .sh-head button { background:none; border:none; font-size:15px;
+    color:var(--accent); cursor:pointer; padding:4px 8px; }
+  .sh-body { padding:16px; overflow-y:auto; flex:1; }
 
-  .sheet-bg {
-    position: fixed; inset: 0; background: rgba(0,0,0,.4);
-    z-index: 100; display: none;
-  }
-  .sheet-bg.open { display: block; }
-  .sheet {
-    position: fixed; left: 0; right: 0; bottom: 0; max-height: 92dvh;
-    background: var(--bg); border-top-left-radius: 16px; border-top-right-radius: 16px;
-    z-index: 101; transform: translateY(100%); transition: transform .25s ease;
-    display: flex; flex-direction: column;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .sheet.open { transform: translateY(0); }
-  .sheet-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; border-bottom: 1px solid var(--line); flex: 0 0 auto;
-  }
-  .sheet-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
-  .sheet-head button {
-    background: none; border: none; font-size: 15px; color: var(--accent);
-    cursor: pointer; padding: 4px 8px;
-  }
-  .sheet-body { padding: 16px; overflow-y: auto; flex: 1 1 auto; }
+  label.f { display:block; margin-bottom:14px; }
+  label.f .l { font-size:12px; color:var(--sub); margin-bottom:4px; font-weight:600; display:block; }
+  label.f input { width:100%; padding:11px 12px; border-radius:8px;
+    border:1px solid var(--line); background:var(--card);
+    font-size:16px; color:var(--ink); font-family:inherit; }
+  label.f input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
 
-  label.field { display: block; margin-bottom: 14px; }
-  label.field .lbl {
-    display: block; font-size: 12px; color: var(--ink-sub); margin-bottom: 4px; font-weight: 600;
-  }
-  label.field input, label.field select, label.field textarea {
-    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--card); font-size: 16px; color: var(--ink); font-family: inherit;
-  }
-  label.field input:focus, label.field select:focus, label.field textarea:focus {
-    outline: 2px solid var(--accent); outline-offset: -1px;
-  }
-  label.field textarea { resize: vertical; min-height: 70px; }
+  .photo { width:100%; aspect-ratio:4/3; background:var(--card);
+    border:2px dashed var(--line); border-radius:10px; margin-bottom:14px;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; position:relative; cursor:pointer; color:var(--sub); }
+  .photo img { width:100%; height:100%; object-fit:cover; }
+  .photo input { display:none; }
+  .ph-row { display:flex; gap:8px; margin-bottom:14px; }
+  .ph-row button { flex:1; padding:9px; border-radius:8px; border:1px solid var(--line);
+    background:var(--card); font-size:13px; cursor:pointer; color:var(--ink); }
+  .ph-row button.del { color:var(--warn); }
 
-  .photo-area {
-    width: 100%; aspect-ratio: 4/3; background: var(--card);
-    border: 2px dashed var(--line); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; position: relative; cursor: pointer; color: var(--ink-sub);
-    margin-bottom: 14px;
-  }
-  .photo-area img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-area .ph { font-size: 14px; }
-  .photo-area input[type=file] { display: none; }
-  .photo-row { display: flex; gap: 8px; margin-bottom: 14px; }
-  .photo-btn {
-    flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--card); font-size: 14px; color: var(--ink); cursor: pointer;
-  }
-  .photo-btn.warn { color: var(--warn); }
+  .store-q { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  .store-q button { padding:6px 10px; border-radius:6px; border:1px solid var(--line);
+    background:var(--card); font-size:13px; cursor:pointer; color:var(--ink); }
+  .store-q button.sel { background:var(--ink); color:#fff; border-color:var(--ink); }
 
-  .store-quick {
-    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;
-  }
-  .store-quick button {
-    padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line);
-    background: var(--card); font-size: 13px; cursor: pointer; color: var(--ink);
-  }
-  .store-quick button.sel { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .det-photo { width:100%; aspect-ratio:1/1; background:#000; border-radius:10px; overflow:hidden; margin-bottom:14px; }
+  .det-photo img { width:100%; height:100%; object-fit:contain; }
+  .det-name { font-size:18px; font-weight:700; margin:0 0 10px; }
+  .det-store { display:inline-block; padding:4px 12px; border-radius:6px;
+    background:var(--accent); color:#fff; font-size:13px; font-weight:600; margin-bottom:14px; }
+  .det-date { font-size:12px; color:var(--sub); margin-bottom:16px; }
+  .del-btn { width:100%; padding:12px; border-radius:10px;
+    border:1px solid var(--warn); background:var(--card); color:var(--warn);
+    font-size:14px; font-weight:600; cursor:pointer; margin-top:8px; }
 
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .toast { position:fixed; left:50%; bottom:100px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:8px;
+    font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s; z-index:200; }
+  .toast.on { opacity:.95; }
 
-  .primary-btn {
-    width: 100%; padding: 14px; border-radius: 10px; border: none;
-    background: var(--accent); color: #fff; font-size: 16px; font-weight: 700;
-    cursor: pointer; margin-top: 4px;
-  }
-  .primary-btn:active { background: var(--accent-deep); }
-  .primary-btn:disabled { background: var(--line); color: var(--ink-sub); }
+  .menu-sheet button { width:100%; text-align:left; padding:14px;
+    background:var(--card); border:1px solid var(--line); border-radius:8px;
+    margin-bottom:8px; font-size:15px; color:var(--ink); cursor:pointer; }
+  .menu-sheet .d { color:var(--sub); font-size:12px; margin-top:2px; }
 
-  .del-btn {
-    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--warn);
-    background: var(--card); color: var(--warn); font-size: 14px; font-weight: 600;
-    cursor: pointer; margin-top: 12px;
-  }
-
-  .detail-photo { width: 100%; aspect-ratio: 1/1; background: #ece7dc; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
-  .detail-photo img { width: 100%; height: 100%; object-fit: contain; background: #000; }
-
-  .info-grid { display: grid; gap: 10px; margin-bottom: 14px; }
-  .info-grid .item {
-    background: var(--card); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
-  }
-  .info-grid .item .k { font-size: 11px; color: var(--ink-sub); margin-bottom: 2px; }
-  .info-grid .item .v { font-size: 15px; color: var(--ink); font-weight: 500; word-break: break-word; }
-
-  .menu-row { display: flex; gap: 8px; margin-top: 12px; }
-  .menu-row button {
-    flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--card); font-size: 13px; cursor: pointer; color: var(--ink);
-  }
-
-  .toast {
-    position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%);
-    background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 8px;
-    font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s;
-    z-index: 200;
-  }
-  .toast.show { opacity: .95; }
-
-  .menu-sheet { padding: 16px; }
-  .menu-sheet button {
-    width: 100%; text-align: left; padding: 14px; background: var(--card);
-    border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px;
-    font-size: 15px; color: var(--ink); cursor: pointer;
-  }
-  .menu-sheet .desc { color: var(--ink-sub); font-size: 12px; margin-top: 2px; }
-
-  .menu-btn {
-    background: none; border: none; padding: 6px 4px; font-size: 22px;
-    color: var(--ink); cursor: pointer;
-  }
+  .json-view { background:var(--card); border:1px solid var(--line);
+    border-radius:8px; padding:12px; font-family:ui-monospace,Consolas,monospace;
+    font-size:12px; max-height:60vh; overflow:auto; white-space:pre-wrap;
+    word-break:break-all; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="head-row">
-    <h1>仕入れラベル <span class="count" id="countLabel"></span></h1>
-    <button class="menu-btn" id="menuBtn" aria-label="メニュー">⋯</button>
+    <h1>仕入れラベル <span class="n" id="n"></span></h1>
+    <button class="menu-btn" id="menuBtn">⋯</button>
   </div>
-  <input class="search" id="searchInput" placeholder="商品名・店舗・メモで検索" type="search">
+  <input class="search" id="q" placeholder="商品名・店舗で検索" type="search">
 </header>
 
-<div class="filter-row" id="filterRow"></div>
+<div class="chips" id="chips"></div>
 
 <main>
-  <div id="list" class="list"></div>
-  <div id="emptyState" class="empty-state" style="display:none;">
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" style="display:none;">
     <div class="em">📦</div>
     <div>まだ商品がありません</div>
     <div style="margin-top:6px; font-size:13px;">右下の + ボタンから追加</div>
   </div>
 </main>
 
-<button class="fab" id="addBtn" aria-label="追加">＋</button>
+<button class="fab" id="add">＋</button>
 
-<!-- 追加/編集シート -->
-<div class="sheet-bg" id="formBg"></div>
-<aside class="sheet" id="formSheet" aria-hidden="true">
-  <div class="sheet-head">
+<!-- 追加/編集 -->
+<div class="bg" id="formBg"></div>
+<aside class="sheet" id="formSheet">
+  <div class="sh-head">
     <button id="formCancel">キャンセル</button>
     <h2 id="formTitle">商品を追加</h2>
     <button id="formSave" style="font-weight:700;">保存</button>
   </div>
-  <div class="sheet-body">
-    <div class="photo-area" id="photoArea">
-      <span class="ph">タップして写真を撮る／選ぶ</span>
-      <input type="file" id="photoInput" accept="image/*" capture="environment">
+  <div class="sh-body">
+    <div class="photo" id="photoArea">
+      <span>タップして写真を撮る／選ぶ</span>
+      <input type="file" id="photoIn" accept="image/*" capture="environment">
     </div>
-    <div class="photo-row" id="photoRow" style="display:none;">
-      <button type="button" class="photo-btn" id="photoRetake">📷 撮り直し</button>
-      <button type="button" class="photo-btn warn" id="photoDelete">画像を削除</button>
+    <div class="ph-row" id="phRow" style="display:none;">
+      <button id="phRetake">📷 撮り直し</button>
+      <button id="phDel" class="del">画像を削除</button>
     </div>
 
-    <label class="field">
-      <span class="lbl">仕入れた店舗 <span style="color:var(--warn)">*</span></span>
-      <div class="store-quick" id="storeQuick"></div>
-      <input id="storeInput" placeholder="店舗名を入力（例: ハードオフ青山店）" required>
+    <label class="f">
+      <span class="l">商品名 <span style="color:var(--warn)">*</span></span>
+      <input id="nameIn" placeholder="例: ガンダム HG ザクⅡ">
     </label>
 
-    <label class="field">
-      <span class="lbl">商品名 <span style="color:var(--warn)">*</span></span>
-      <input id="nameInput" placeholder="商品名" required>
-    </label>
-
-    <div class="row2">
-      <label class="field">
-        <span class="lbl">仕入れ値（円）</span>
-        <input id="costInput" type="number" inputmode="numeric" placeholder="0">
-      </label>
-      <label class="field">
-        <span class="lbl">販売価格（円）</span>
-        <input id="priceInput" type="number" inputmode="numeric" placeholder="0">
-      </label>
-    </div>
-    <div class="row2">
-      <label class="field">
-        <span class="lbl">送料（円）</span>
-        <input id="shipInput" type="number" inputmode="numeric" placeholder="0">
-      </label>
-      <label class="field">
-        <span class="lbl">仕入れ日</span>
-        <input id="dateInput" type="date">
-      </label>
-    </div>
-
-    <label class="field">
-      <span class="lbl">メモ（ボイスメモを後で貼ってもOK）</span>
-      <textarea id="memoInput" placeholder="リサーチのきっかけ、状態、気づきなど"></textarea>
+    <label class="f">
+      <span class="l">仕入れた店舗ラベル <span style="color:var(--warn)">*</span></span>
+      <div class="store-q" id="storeQ"></div>
+      <input id="storeIn" placeholder="例: ハードオフ青山店">
     </label>
   </div>
 </aside>
 
-<!-- 詳細シート -->
-<div class="sheet-bg" id="detailBg"></div>
-<aside class="sheet" id="detailSheet" aria-hidden="true">
-  <div class="sheet-head">
-    <button id="detailClose">閉じる</button>
+<!-- 詳細 -->
+<div class="bg" id="detBg"></div>
+<aside class="sheet" id="detSheet">
+  <div class="sh-head">
+    <button id="detClose">閉じる</button>
     <h2>詳細</h2>
-    <button id="detailEdit" style="font-weight:700;">編集</button>
+    <button id="detEdit" style="font-weight:700;">編集</button>
   </div>
-  <div class="sheet-body" id="detailBody"></div>
+  <div class="sh-body" id="detBody"></div>
 </aside>
 
 <!-- メニュー -->
-<div class="sheet-bg" id="menuBg"></div>
-<aside class="sheet" id="menuSheet" aria-hidden="true">
-  <div class="sheet-head">
+<div class="bg" id="menuBg"></div>
+<aside class="sheet" id="menuSheet">
+  <div class="sh-head">
     <button id="menuClose">閉じる</button>
     <h2>メニュー</h2>
     <span></span>
   </div>
-  <div class="sheet-body menu-sheet">
-    <button id="exportJson">
-      📤 JSON でエクスポート
-      <div class="desc">Claude に渡す/バックアップ用にダウンロード</div>
+  <div class="sh-body menu-sheet">
+    <button id="showJson">
+      📋 JSON 表示（Claude に貼る用）
+      <div class="d">全件を JSON で表示、コピーして Claude に渡せる</div>
     </button>
-    <button id="sendDiscord">
-      💬 Discord に最新分を送る
-      <div class="desc">前回送信以降の新規・更新ぶんをまとめて送信</div>
+    <button id="dlJson">
+      💾 JSON でダウンロード
+      <div class="d">バックアップ用にファイル保存</div>
     </button>
-    <button id="sendDiscordAll">
-      💬 Discord に全件送る
-      <div class="desc">全在庫をJSONとして webhook に送信</div>
-    </button>
-    <button id="importJson">
+    <button id="imJson">
       📥 JSON を読み込み
-      <div class="desc">別端末からバックアップを取り込み</div>
+      <div class="d">別端末のバックアップを取り込み</div>
     </button>
-    <input type="file" id="importInput" accept="application/json,.json" style="display:none">
-    <button id="clearAll" style="color: var(--warn); border-color: var(--warn);">
+    <input type="file" id="imIn" accept=".json,application/json" style="display:none">
+    <button id="clearAll" style="color:var(--warn); border-color:var(--warn);">
       ⚠️ 全データを削除
-      <div class="desc" style="color: var(--warn);">取り消し不可。エクスポート推奨</div>
+      <div class="d" style="color:var(--warn);">取り消し不可</div>
     </button>
+  </div>
+</aside>
+
+<!-- JSON表示 -->
+<div class="bg" id="jsonBg"></div>
+<aside class="sheet" id="jsonSheet">
+  <div class="sh-head">
+    <button id="jsonClose">閉じる</button>
+    <h2>JSON</h2>
+    <button id="jsonCopy" style="font-weight:700;">コピー</button>
+  </div>
+  <div class="sh-body">
+    <div class="json-view" id="jsonView"></div>
   </div>
 </aside>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// IndexedDB
-// ============================================================
-const DB_NAME = 'stockLabelApp';
-const DB_VERSION = 1;
-const STORE = 'items';
-const META = 'meta';
-
-const db = new Promise((resolve, reject) => {
-  const req = indexedDB.open(DB_NAME, DB_VERSION);
-  req.onupgradeneeded = (e) => {
+// ---- IndexedDB ----
+const DB='stockLabelApp', V=2, STORE='items';
+const db = new Promise((res, rej) => {
+  const r = indexedDB.open(DB, V);
+  r.onupgradeneeded = e => {
     const d = e.target.result;
-    if (!d.objectStoreNames.contains(STORE)) {
-      d.createObjectStore(STORE, { keyPath: 'id' });
-    }
-    if (!d.objectStoreNames.contains(META)) {
-      d.createObjectStore(META, { keyPath: 'k' });
-    }
+    if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, {keyPath:'id'});
   };
-  req.onsuccess = () => resolve(req.result);
-  req.onerror = () => reject(req.error);
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => rej(r.error);
 });
+async function dbAll() { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readonly').objectStore(STORE).getAll();t.onsuccess=()=>rs(t.result);t.onerror=()=>rj(t.error);});}
+async function dbPut(x) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(x);t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
+async function dbDel(id) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).delete(id);t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
+async function dbClear() { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).clear();t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
 
-async function dbAll() {
-  const d = await db;
-  return new Promise((res, rej) => {
-    const tx = d.transaction(STORE, 'readonly');
-    const all = tx.objectStore(STORE).getAll();
-    all.onsuccess = () => res(all.result);
-    all.onerror = () => rej(all.error);
-  });
-}
-async function dbPut(item) {
-  const d = await db;
-  return new Promise((res, rej) => {
-    const tx = d.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).put(item);
-    tx.oncomplete = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
-}
-async function dbDel(id) {
-  const d = await db;
-  return new Promise((res, rej) => {
-    const tx = d.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).delete(id);
-    tx.oncomplete = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
-}
-async function dbClear() {
-  const d = await db;
-  return new Promise((res, rej) => {
-    const tx = d.transaction(STORE, 'readwrite');
-    tx.objectStore(STORE).clear();
-    tx.oncomplete = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
-}
-async function metaGet(k) {
-  const d = await db;
-  return new Promise((res, rej) => {
-    const tx = d.transaction(META, 'readonly');
-    const r = tx.objectStore(META).get(k);
-    r.onsuccess = () => res(r.result?.v);
-    r.onerror = () => rej(r.error);
-  });
-}
-async function metaSet(k, v) {
-  const d = await db;
-  return new Promise((res, rej) => {
-    const tx = d.transaction(META, 'readwrite');
-    tx.objectStore(META).put({ k, v });
-    tx.oncomplete = () => res();
-    tx.onerror = () => rej(tx.error);
-  });
-}
+// ---- state ----
+let state = { filter:null, q:'', editId:null, photo:null };
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-// ============================================================
-// Quick stores（履歴を頻度順に保持）
-// ============================================================
-const DEFAULT_STORES = ['ハードオフ', 'ブックオフ', '駿河屋', 'らしんばん', 'まんだらけ', 'ヤフオク', 'メルカリ'];
-async function getQuickStores() {
-  const items = await dbAll();
-  const freq = {};
-  for (const it of items) {
-    const s = (it.store || '').trim();
-    if (!s) continue;
-    freq[s] = (freq[s] || 0) + 1;
-  }
-  const recent = Object.entries(freq).sort((a,b) => b[1] - a[1]).map(e => e[0]);
-  const merged = [...recent];
-  for (const d of DEFAULT_STORES) if (!merged.includes(d)) merged.push(d);
-  return merged.slice(0, 10);
-}
+const DEFAULT_STORES = ['ハードオフ','ブックオフ','駿河屋','らしんばん','まんだらけ','ヤフオク','メルカリ'];
 
-// ============================================================
-// 状態
-// ============================================================
-let state = {
-  filterStore: null,
-  search: '',
-  editId: null,
-  photoDataUrl: null,
-};
-
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-function fmtYen(n) {
-  if (n == null || n === '') return '';
-  const v = Number(n);
-  if (Number.isNaN(v)) return '';
-  return '¥' + v.toLocaleString();
-}
-
-function calcProfit(it) {
-  const cost = Number(it.cost || 0);
-  const price = Number(it.price || 0);
-  const ship = Number(it.ship || 0);
-  if (!price) return null;
-  return price - cost - ship;
-}
-
-// ============================================================
-// レンダ
-// ============================================================
+// ---- render ----
 async function render() {
-  const items = await dbAll();
-  items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const items = (await dbAll()).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  $('n').textContent = `(${items.length})`;
 
-  // 件数
-  document.getElementById('countLabel').textContent = `(${items.length})`;
-
-  // フィルタchips
-  const stores = [...new Set(items.map(i => i.store).filter(Boolean))];
-  const filterRow = document.getElementById('filterRow');
-  filterRow.innerHTML = '';
-  const allChip = document.createElement('button');
-  allChip.className = 'chip' + (state.filterStore == null ? ' active' : '');
-  allChip.textContent = `すべて (${items.length})`;
-  allChip.onclick = () => { state.filterStore = null; render(); };
-  filterRow.appendChild(allChip);
+  // chips
+  const stores = [...new Set(items.map(i=>i.store).filter(Boolean))];
+  const c = $('chips'); c.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'chip' + (state.filter==null?' on':'');
+  all.textContent = `すべて (${items.length})`;
+  all.onclick = ()=>{state.filter=null; render();};
+  c.appendChild(all);
   for (const s of stores) {
-    const c = document.createElement('button');
-    const n = items.filter(i => i.store === s).length;
-    c.className = 'chip' + (state.filterStore === s ? ' active' : '');
-    c.textContent = `${s} (${n})`;
-    c.onclick = () => { state.filterStore = (state.filterStore === s ? null : s); render(); };
-    filterRow.appendChild(c);
+    const b = document.createElement('button');
+    const n = items.filter(i=>i.store===s).length;
+    b.className = 'chip' + (state.filter===s?' on':'');
+    b.textContent = `${s} (${n})`;
+    b.onclick = ()=>{state.filter = state.filter===s?null:s; render();};
+    c.appendChild(b);
   }
 
-  // フィルタ + 検索適用
-  const q = state.search.trim().toLowerCase();
-  const filtered = items.filter(it => {
-    if (state.filterStore && it.store !== state.filterStore) return false;
+  // filter
+  const q = state.q.trim().toLowerCase();
+  const f = items.filter(it => {
+    if (state.filter && it.store !== state.filter) return false;
     if (!q) return true;
-    return [it.name, it.store, it.memo].some(s => (s || '').toLowerCase().includes(q));
+    return (it.name||'').toLowerCase().includes(q) || (it.store||'').toLowerCase().includes(q);
   });
 
-  // リスト
-  const list = document.getElementById('list');
-  list.innerHTML = '';
-  const empty = document.getElementById('emptyState');
-  if (filtered.length === 0) {
-    empty.style.display = 'block';
+  const L = $('list'); L.innerHTML = '';
+  $('empty').style.display = f.length ? 'none' : 'block';
+  if (f.length === 0) {
     if (items.length > 0) {
-      empty.querySelector('.em').textContent = '🔍';
-      empty.querySelector('div:nth-child(2)').textContent = '該当なし';
-      empty.querySelector('div:nth-child(3)').textContent = '検索/フィルタを変えてみて';
+      $('empty').innerHTML = '<div class="em">🔍</div><div>該当なし</div><div style="margin-top:6px; font-size:13px;">検索/フィルタを変えてみて</div>';
     } else {
-      empty.querySelector('.em').textContent = '📦';
-      empty.querySelector('div:nth-child(2)').textContent = 'まだ商品がありません';
-      empty.querySelector('div:nth-child(3)').textContent = '右下の + ボタンから追加';
+      $('empty').innerHTML = '<div class="em">📦</div><div>まだ商品がありません</div><div style="margin-top:6px; font-size:13px;">右下の + ボタンから追加</div>';
     }
-  } else {
-    empty.style.display = 'none';
   }
-  for (const it of filtered) {
+  for (const it of f) {
     const card = document.createElement('div');
     card.className = 'card';
-    card.onclick = () => openDetail(it.id);
+    card.onclick = ()=>openDet(it.id);
     const thumb = it.photo
       ? `<img class="thumb" src="${it.photo}" alt="">`
       : `<div class="thumb empty">No Image</div>`;
-    const profit = calcProfit(it);
-    card.innerHTML = `
-      ${thumb}
-      <div class="body">
-        <div class="store">${escapeHtml(it.store || '未設定')}</div>
-        <div class="name">${escapeHtml(it.name || '(名称未設定)')}</div>
-        <div class="meta">
-          ${it.cost ? '仕入 ' + fmtYen(it.cost) : ''}
-          ${profit != null ? ' / <span class="profit">利益 ' + fmtYen(profit) + '</span>' : ''}
-        </div>
-      </div>
-    `;
-    list.appendChild(card);
+    card.innerHTML = `${thumb}<div class="b"><div class="badge">${esc(it.store||'未設定')}</div><div class="name">${esc(it.name||'(名称未設定)')}</div></div>`;
+    L.appendChild(card);
   }
 }
 
-function escapeHtml(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// ---- sheet ----
+function open(id) {
+  $(id+'Bg').classList.add('on');
+  $(id+'Sheet').classList.add('on');
+}
+function close(id) {
+  $(id+'Bg').classList.remove('on');
+  $(id+'Sheet').classList.remove('on');
 }
 
-// ============================================================
-// シート開閉
-// ============================================================
-function openSheet(id) {
-  document.getElementById(id + 'Bg').classList.add('open');
-  const s = document.getElementById(id + 'Sheet');
-  s.classList.add('open');
-  s.setAttribute('aria-hidden', 'false');
+// ---- photo ----
+function resize(file, max=1280, q=0.82) {
+  return new Promise((rs, rj) => {
+    const r = new FileReader();
+    r.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h && w > max) { h = h*max/w; w = max; }
+        else if (h >= w && h > max) { w = w*max/h; h = max; }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        rs(c.toDataURL('image/jpeg', q));
+      };
+      img.onerror = rj;
+      img.src = e.target.result;
+    };
+    r.onerror = rj;
+    r.readAsDataURL(file);
+  });
 }
-function closeSheet(id) {
-  document.getElementById(id + 'Bg').classList.remove('open');
-  const s = document.getElementById(id + 'Sheet');
-  s.classList.remove('open');
-  s.setAttribute('aria-hidden', 'true');
+function updPhoto() {
+  const a = $('photoArea');
+  [...a.children].forEach(n => { if (n.tagName !== 'INPUT') n.remove(); });
+  if (state.photo) {
+    const img = new Image(); img.src = state.photo; a.prepend(img);
+    $('phRow').style.display = 'flex';
+  } else {
+    const sp = document.createElement('span');
+    sp.textContent = 'タップして写真を撮る／選ぶ';
+    a.prepend(sp);
+    $('phRow').style.display = 'none';
+  }
 }
+$('photoArea').onclick = e => { if (e.target.tagName !== 'BUTTON') $('photoIn').click(); };
+$('photoIn').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { state.photo = await resize(f); updPhoto(); } catch { toast('画像読込失敗'); }
+  e.target.value = '';
+};
+$('phRetake').onclick = () => $('photoIn').click();
+$('phDel').onclick = () => { state.photo = null; updPhoto(); };
 
-// ============================================================
-// 追加/編集フォーム
-// ============================================================
+// ---- form ----
 async function openForm(id) {
   state.editId = id || null;
-  state.photoDataUrl = null;
-  document.getElementById('formTitle').textContent = id ? '編集' : '商品を追加';
+  state.photo = null;
+  $('formTitle').textContent = id ? '編集' : '商品を追加';
 
-  // クイック店舗
-  const quick = document.getElementById('storeQuick');
-  quick.innerHTML = '';
-  const stores = await getQuickStores();
+  // 店舗履歴
+  const items = await dbAll();
+  const freq = {};
+  for (const it of items) { const s = (it.store||'').trim(); if (s) freq[s] = (freq[s]||0) + 1; }
+  const recent = Object.entries(freq).sort((a,b) => b[1]-a[1]).map(e => e[0]);
+  const stores = [...recent, ...DEFAULT_STORES.filter(s => !recent.includes(s))].slice(0, 10);
+  const q = $('storeQ'); q.innerHTML = '';
   for (const s of stores) {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = s;
     b.onclick = () => {
-      document.getElementById('storeInput').value = s;
-      quick.querySelectorAll('button').forEach(x => x.classList.remove('sel'));
+      $('storeIn').value = s;
+      q.querySelectorAll('button').forEach(x => x.classList.remove('sel'));
       b.classList.add('sel');
     };
-    quick.appendChild(b);
+    q.appendChild(b);
   }
 
   if (id) {
-    const items = await dbAll();
     const it = items.find(x => x.id === id);
     if (it) {
-      document.getElementById('storeInput').value = it.store || '';
-      document.getElementById('nameInput').value = it.name || '';
-      document.getElementById('costInput').value = it.cost ?? '';
-      document.getElementById('priceInput').value = it.price ?? '';
-      document.getElementById('shipInput').value = it.ship ?? '';
-      document.getElementById('dateInput').value = it.date || '';
-      document.getElementById('memoInput').value = it.memo || '';
-      state.photoDataUrl = it.photo || null;
-      const sel = [...quick.children].find(b => b.textContent === it.store);
+      $('nameIn').value = it.name || '';
+      $('storeIn').value = it.store || '';
+      state.photo = it.photo || null;
+      const sel = [...q.children].find(b => b.textContent === it.store);
       if (sel) sel.classList.add('sel');
     }
   } else {
-    document.getElementById('storeInput').value = '';
-    document.getElementById('nameInput').value = '';
-    document.getElementById('costInput').value = '';
-    document.getElementById('priceInput').value = '';
-    document.getElementById('shipInput').value = '';
-    document.getElementById('dateInput').value = new Date().toISOString().slice(0,10);
-    document.getElementById('memoInput').value = '';
+    $('nameIn').value = ''; $('storeIn').value = '';
   }
-  updatePhotoArea();
-  openSheet('form');
+  updPhoto();
+  open('form');
 }
-
-function updatePhotoArea() {
-  const area = document.getElementById('photoArea');
-  const row = document.getElementById('photoRow');
-  area.querySelectorAll('img, .ph').forEach(n => n.remove());
-  if (state.photoDataUrl) {
-    const img = document.createElement('img');
-    img.src = state.photoDataUrl;
-    area.insertBefore(img, area.firstChild);
-    row.style.display = 'flex';
-  } else {
-    const ph = document.createElement('span');
-    ph.className = 'ph';
-    ph.textContent = 'タップして写真を撮る／選ぶ';
-    area.insertBefore(ph, area.firstChild);
-    row.style.display = 'none';
-  }
-}
-
-// 写真リサイズ
-function resizeImage(file, maxSide = 1280, quality = 0.82) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > h && w > maxSide) { h = h * maxSide / w; w = maxSide; }
-        else if (h >= w && h > maxSide) { w = w * maxSide / h; h = maxSide; }
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(c.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-document.getElementById('photoArea').onclick = (e) => {
-  if (e.target.tagName === 'BUTTON') return;
-  document.getElementById('photoInput').click();
-};
-document.getElementById('photoInput').onchange = async (e) => {
-  const f = e.target.files[0];
-  if (!f) return;
-  try {
-    state.photoDataUrl = await resizeImage(f);
-    updatePhotoArea();
-  } catch (err) {
-    toast('画像読み込みに失敗');
-  }
-  e.target.value = '';
-};
-document.getElementById('photoRetake').onclick = () => document.getElementById('photoInput').click();
-document.getElementById('photoDelete').onclick = () => {
-  state.photoDataUrl = null;
-  updatePhotoArea();
-};
-
-document.getElementById('formCancel').onclick = () => closeSheet('form');
-document.getElementById('formBg').onclick = () => closeSheet('form');
-document.getElementById('formSave').onclick = async () => {
-  const store = document.getElementById('storeInput').value.trim();
-  const name = document.getElementById('nameInput').value.trim();
-  if (!store) { toast('店舗を入力してください'); return; }
-  if (!name) { toast('商品名を入力してください'); return; }
-
+$('formCancel').onclick = () => close('form');
+$('formBg').onclick = () => close('form');
+$('formSave').onclick = async () => {
+  const name = $('nameIn').value.trim();
+  const store = $('storeIn').value.trim();
+  if (!name) { toast('商品名を入力'); return; }
+  if (!store) { toast('店舗を入力'); return; }
   const now = Date.now();
   let item;
   if (state.editId) {
@@ -718,238 +421,120 @@ document.getElementById('formSave').onclick = async () => {
   } else {
     item = { id: uid(), createdAt: now };
   }
-  item.store = store;
   item.name = name;
-  item.cost = numOrNull(document.getElementById('costInput').value);
-  item.price = numOrNull(document.getElementById('priceInput').value);
-  item.ship = numOrNull(document.getElementById('shipInput').value);
-  item.date = document.getElementById('dateInput').value || null;
-  item.memo = document.getElementById('memoInput').value.trim();
-  item.photo = state.photoDataUrl;
+  item.store = store;
+  item.photo = state.photo;
   item.updatedAt = now;
-
   await dbPut(item);
-  closeSheet('form');
+  close('form');
   toast(state.editId ? '更新しました' : '追加しました');
   state.editId = null;
   render();
 };
 
-function numOrNull(v) {
-  if (v == null || v === '') return null;
-  const n = Number(v);
-  return Number.isNaN(n) ? null : n;
-}
-
-// ============================================================
-// 詳細表示
-// ============================================================
-async function openDetail(id) {
+// ---- detail ----
+async function openDet(id) {
   const items = await dbAll();
   const it = items.find(x => x.id === id);
   if (!it) return;
-  const body = document.getElementById('detailBody');
-  const profit = calcProfit(it);
-  body.innerHTML = `
-    ${it.photo ? `<div class="detail-photo"><img src="${it.photo}" alt=""></div>` : ''}
-    <div style="margin-bottom: 12px;">
-      <div class="card" style="cursor:default; box-shadow:none;">
-        <div class="body" style="padding:14px;">
-          <div class="store" style="font-size:12px;">${escapeHtml(it.store)}</div>
-          <div style="font-size:17px; font-weight:700; margin-bottom:8px;">${escapeHtml(it.name)}</div>
-        </div>
-      </div>
-    </div>
-    <div class="info-grid">
-      ${it.cost != null ? `<div class="item"><div class="k">仕入れ値</div><div class="v">${fmtYen(it.cost)}</div></div>` : ''}
-      ${it.price != null ? `<div class="item"><div class="k">販売価格</div><div class="v">${fmtYen(it.price)}</div></div>` : ''}
-      ${it.ship != null ? `<div class="item"><div class="k">送料</div><div class="v">${fmtYen(it.ship)}</div></div>` : ''}
-      ${profit != null ? `<div class="item"><div class="k">利益</div><div class="v" style="color:var(--ok);font-weight:700;">${fmtYen(profit)}</div></div>` : ''}
-      ${it.date ? `<div class="item"><div class="k">仕入れ日</div><div class="v">${escapeHtml(it.date)}</div></div>` : ''}
-      ${it.memo ? `<div class="item"><div class="k">メモ</div><div class="v" style="white-space:pre-wrap;">${escapeHtml(it.memo)}</div></div>` : ''}
-    </div>
+  $('detBody').innerHTML = `
+    ${it.photo ? `<div class="det-photo"><img src="${it.photo}"></div>` : ''}
+    <div class="det-store">${esc(it.store)}</div>
+    <h3 class="det-name">${esc(it.name)}</h3>
+    <div class="det-date">追加: ${new Date(it.createdAt).toLocaleString('ja-JP')}</div>
     <button class="del-btn" id="delThis">この商品を削除</button>
   `;
-  document.getElementById('delThis').onclick = async () => {
+  $('delThis').onclick = async () => {
     if (!confirm('削除しますか？')) return;
     await dbDel(id);
-    closeSheet('detail');
+    close('det');
     toast('削除しました');
     render();
   };
-  document.getElementById('detailEdit').onclick = () => {
-    closeSheet('detail');
-    openForm(id);
-  };
-  openSheet('detail');
+  $('detEdit').onclick = () => { close('det'); openForm(id); };
+  open('det');
 }
+$('detClose').onclick = () => close('det');
+$('detBg').onclick = () => close('det');
 
-document.getElementById('detailClose').onclick = () => closeSheet('detail');
-document.getElementById('detailBg').onclick = () => closeSheet('detail');
+// ---- menu ----
+$('menuBtn').onclick = () => open('menu');
+$('menuClose').onclick = () => close('menu');
+$('menuBg').onclick = () => close('menu');
 
-// ============================================================
-// メニュー
-// ============================================================
-document.getElementById('menuBtn').onclick = () => openSheet('menu');
-document.getElementById('menuClose').onclick = () => closeSheet('menu');
-document.getElementById('menuBg').onclick = () => closeSheet('menu');
-
-document.getElementById('exportJson').onclick = async () => {
-  const items = await dbAll();
-  const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), items }, null, 2)],
-    { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `stock-label-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  closeSheet('menu');
-  toast('エクスポート完了');
+$('showJson').onclick = async () => {
+  const items = (await dbAll()).map(it => ({
+    name: it.name, store: it.store,
+    createdAt: new Date(it.createdAt).toISOString(),
+    hasPhoto: !!it.photo,
+  }));
+  $('jsonView').textContent = JSON.stringify({ items }, null, 2);
+  close('menu');
+  open('json');
 };
-
-document.getElementById('importJson').onclick = () => {
-  document.getElementById('importInput').click();
-};
-document.getElementById('importInput').onchange = async (e) => {
-  const f = e.target.files[0];
-  if (!f) return;
+$('jsonClose').onclick = () => close('json');
+$('jsonBg').onclick = () => close('json');
+$('jsonCopy').onclick = async () => {
   try {
-    const text = await f.text();
-    const data = JSON.parse(text);
+    await navigator.clipboard.writeText($('jsonView').textContent);
+    toast('コピー完了');
+  } catch { toast('コピー失敗'); }
+};
+
+$('dlJson').onclick = async () => {
+  const items = await dbAll();
+  const blob = new Blob([JSON.stringify({ items }, null, 2)], { type:'application/json' });
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = u; a.download = `stock-label-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(u);
+  close('menu');
+  toast('ダウンロード完了');
+};
+
+$('imJson').onclick = () => $('imIn').click();
+$('imIn').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
     const items = Array.isArray(data) ? data : data.items;
-    if (!Array.isArray(items)) throw new Error('items not found');
+    if (!Array.isArray(items)) throw new Error('items 配列がない');
     for (const it of items) {
       if (!it.id) it.id = uid();
       if (!it.createdAt) it.createdAt = Date.now();
       await dbPut(it);
     }
-    closeSheet('menu');
-    toast(`${items.length}件を取り込み`);
+    close('menu');
+    toast(`${items.length}件 取り込み`);
     render();
-  } catch (err) {
-    toast('読み込み失敗: ' + err.message);
-  }
+  } catch (err) { toast('読込失敗: ' + err.message); }
   e.target.value = '';
 };
 
-document.getElementById('clearAll').onclick = async () => {
+$('clearAll').onclick = async () => {
   if (!confirm('全データを削除します。取り消せません。続行？')) return;
-  if (!confirm('本当によろしいですか？')) return;
+  if (!confirm('本当に？')) return;
   await dbClear();
-  await metaSet('lastSyncAt', 0);
-  closeSheet('menu');
-  toast('全削除しました');
+  close('menu');
+  toast('全削除');
   render();
 };
 
-// Discord webhook 設定
-const DISCORD_WEBHOOK_KEY = 'discordWebhook';
-async function getWebhook() {
-  return (await metaGet(DISCORD_WEBHOOK_KEY)) || localStorage.getItem(DISCORD_WEBHOOK_KEY) || '';
-}
-async function setWebhook(url) {
-  await metaSet(DISCORD_WEBHOOK_KEY, url);
-  localStorage.setItem(DISCORD_WEBHOOK_KEY, url);
-}
-async function ensureWebhook() {
-  let url = await getWebhook();
-  if (!url) {
-    url = prompt('Discord Webhook URL を入力してください\n（次回以降は記憶されます）');
-    if (!url) return null;
-    url = url.trim();
-    if (!/^https:\/\/discord(app)?\.com\/api\/webhooks\//.test(url)) {
-      toast('URL が Discord webhook ではない');
-      return null;
-    }
-    await setWebhook(url);
-  }
-  return url;
+// ---- core ----
+$('add').onclick = () => openForm();
+$('q').oninput = e => { state.q = e.target.value; render(); };
+
+let tt;
+function toast(m) {
+  const t = $('toast'); t.textContent = m; t.classList.add('on');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2000);
 }
 
-async function sendDiscordItems(items, label) {
-  const url = await ensureWebhook();
-  if (!url) return;
-  if (items.length === 0) { toast('送信対象なし'); return; }
-
-  toast(`${label}: ${items.length}件 送信中…`);
-  const summary = items.map(it => {
-    const lines = [
-      `▼ ${it.store} / ${it.name}`,
-      it.cost != null ? `仕入: ¥${it.cost}` : '',
-      it.price != null ? `販売: ¥${it.price}` : '',
-      it.ship != null ? `送料: ¥${it.ship}` : '',
-      it.date ? `日付: ${it.date}` : '',
-      it.memo ? `メモ: ${it.memo}` : '',
-    ].filter(Boolean);
-    return lines.join('\n');
-  }).join('\n\n');
-
-  const trimmed = summary.length > 1800 ? summary.slice(0, 1800) + '\n…(以下省略・全文は添付JSON)' : summary;
-  const content = `📦 仕入れラベル ${label} (${items.length}件)\n\n${trimmed}`;
-
-  const fd = new FormData();
-  fd.append('payload_json', JSON.stringify({ content }));
-  const stripped = items.map(it => ({ ...it, photo: it.photo ? '[photo omitted]' : null }));
-  const blob = new Blob([JSON.stringify({ items: stripped, exportedAt: new Date().toISOString() }, null, 2)],
-    { type: 'application/json' });
-  fd.append('files[0]', blob, `stock-label-${Date.now()}.json`);
-
-  try {
-    const res = await fetch(url, { method: 'POST', body: fd });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    await metaSet('lastSyncAt', Date.now());
-    toast('Discord 送信完了');
-    closeSheet('menu');
-  } catch (err) {
-    toast('送信失敗: ' + err.message);
-  }
-}
-
-document.getElementById('sendDiscord').onclick = async () => {
-  const last = (await metaGet('lastSyncAt')) || 0;
-  const all = await dbAll();
-  const fresh = all.filter(it => (it.updatedAt || it.createdAt || 0) > last);
-  await sendDiscordItems(fresh, '差分');
-};
-document.getElementById('sendDiscordAll').onclick = async () => {
-  const all = await dbAll();
-  await sendDiscordItems(all, '全件');
-};
-
-// ============================================================
-// 追加ボタン
-// ============================================================
-document.getElementById('addBtn').onclick = () => openForm();
-
-// 検索
-document.getElementById('searchInput').oninput = (e) => {
-  state.search = e.target.value;
-  render();
-};
-
-// ============================================================
-// Toast
-// ============================================================
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
-}
-
-// ============================================================
-// Service Worker 登録
-// ============================================================
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  });
+  navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
-// 初期描画
 render();
 </script>
 </body>
