@@ -14,6 +14,7 @@
     color-scheme: light only;
     --bg:#f7f5f0; --card:#fff; --ink:#2a2723; --sub:#8a8278;
     --line:#e6e1d6; --accent:#c8704b; --accent-d:#a85530; --warn:#c0392b;
+    --unset:#b6ad9e; --ok:#6a9b46;
   }
   html,body { margin:0; padding:0; background:var(--bg); color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
@@ -38,30 +39,26 @@
     border:1px solid var(--line); background:var(--card); color:var(--sub);
     font-size:13px; cursor:pointer; white-space:nowrap; }
   .chip.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .chip.unset.on { background:var(--warn); border-color:var(--warn); }
 
-  main { padding:8px 12px 100px; }
-  .list { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
-    overflow:hidden; cursor:pointer; box-shadow:0 1px 2px rgba(60,40,20,.05),0 4px 10px rgba(60,40,20,.04); }
-  .card .thumb { width:100%; aspect-ratio:1/1; background:#ece7dc; object-fit:cover; display:block; }
-  .card .thumb.empty { display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:11px; }
-  .card .b { padding:8px 10px 10px; }
-  .badge { display:inline-block; padding:2px 8px; border-radius:4px;
-    background:var(--accent); color:#fff; font-size:11px; font-weight:600;
-    margin-bottom:5px; max-width:100%; overflow:hidden; text-overflow:ellipsis;
-    white-space:nowrap; }
-  .name { font-size:13px; font-weight:600; margin:0;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  main { padding:8px 12px 24px; }
+  .group-title { font-size:12px; color:var(--sub); font-weight:600;
+    margin:14px 4px 6px; }
+  .list { display:grid; grid-template-columns:1fr; gap:8px; }
+  .row { background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; cursor:pointer; display:flex; gap:10px; align-items:flex-start; }
+  .row:active { background:#fbf9f4; }
+  .badge { flex:0 0 auto; padding:3px 8px; border-radius:4px;
+    color:#fff; font-size:11px; font-weight:600; margin-top:2px;
+    max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .badge.set { background:var(--accent); }
+  .badge.unset { background:var(--unset); }
+  .row .name { flex:1 1 auto; font-size:13px; font-weight:500;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; word-break:break-word; }
+  .row .meta { font-size:11px; color:var(--sub); margin-top:3px; }
 
-  .empty { text-align:center; padding:60px 20px; color:var(--sub); }
-  .empty .em { font-size:36px; margin-bottom:8px; }
-
-  .fab { position:fixed; right:20px; bottom:calc(20px + env(safe-area-inset-bottom));
-    width:56px; height:56px; border-radius:50%; background:var(--accent);
-    color:#fff; border:none; font-size:30px; line-height:1; cursor:pointer;
-    box-shadow:0 4px 16px rgba(168,85,48,.4); z-index:20;
-    display:flex; align-items:center; justify-content:center; }
-  .fab:active { background:var(--accent-d); }
+  .empty { text-align:center; padding:40px 20px; color:var(--sub); }
+  .empty .em { font-size:32px; margin-bottom:6px; }
 
   .bg { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:100; display:none; }
   .bg.on { display:block; }
@@ -78,6 +75,12 @@
     color:var(--accent); cursor:pointer; padding:4px 8px; }
   .sh-body { padding:16px; overflow-y:auto; flex:1; }
 
+  .target-name { background:var(--card); border:1px solid var(--line);
+    border-radius:10px; padding:12px; font-size:14px; font-weight:600;
+    margin-bottom:14px; word-break:break-word; line-height:1.5; }
+  .target-source { font-size:11px; color:var(--sub); font-weight:400; margin-top:4px; }
+  .target-source a { color:var(--sub); }
+
   label.f { display:block; margin-bottom:14px; }
   label.f .l { font-size:12px; color:var(--sub); margin-bottom:4px; font-weight:600; display:block; }
   label.f input { width:100%; padding:11px 12px; border-radius:8px;
@@ -85,33 +88,20 @@
     font-size:16px; color:var(--ink); font-family:inherit; }
   label.f input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
 
-  .photo { width:100%; aspect-ratio:4/3; background:var(--card);
-    border:2px dashed var(--line); border-radius:10px; margin-bottom:14px;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; position:relative; cursor:pointer; color:var(--sub); }
-  .photo img { width:100%; height:100%; object-fit:cover; }
-  .photo input { display:none; }
-  .ph-row { display:flex; gap:8px; margin-bottom:14px; }
-  .ph-row button { flex:1; padding:9px; border-radius:8px; border:1px solid var(--line);
-    background:var(--card); font-size:13px; cursor:pointer; color:var(--ink); }
-  .ph-row button.del { color:var(--warn); }
-
   .store-q { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
-  .store-q button { padding:6px 10px; border-radius:6px; border:1px solid var(--line);
+  .store-q button { padding:7px 12px; border-radius:6px; border:1px solid var(--line);
     background:var(--card); font-size:13px; cursor:pointer; color:var(--ink); }
   .store-q button.sel { background:var(--ink); color:#fff; border-color:var(--ink); }
 
-  .det-photo { width:100%; aspect-ratio:1/1; background:#000; border-radius:10px; overflow:hidden; margin-bottom:14px; }
-  .det-photo img { width:100%; height:100%; object-fit:contain; }
-  .det-name { font-size:18px; font-weight:700; margin:0 0 10px; }
-  .det-store { display:inline-block; padding:4px 12px; border-radius:6px;
-    background:var(--accent); color:#fff; font-size:13px; font-weight:600; margin-bottom:14px; }
-  .det-date { font-size:12px; color:var(--sub); margin-bottom:16px; }
-  .del-btn { width:100%; padding:12px; border-radius:10px;
-    border:1px solid var(--warn); background:var(--card); color:var(--warn);
-    font-size:14px; font-weight:600; cursor:pointer; margin-top:8px; }
+  .save-btn { width:100%; padding:13px; border-radius:10px; border:none;
+    background:var(--accent); color:#fff; font-size:16px; font-weight:700;
+    cursor:pointer; margin-top:4px; }
+  .save-btn:active { background:var(--accent-d); }
+  .clear-btn { width:100%; padding:10px; border-radius:8px;
+    border:1px solid var(--line); background:var(--card);
+    color:var(--sub); font-size:13px; cursor:pointer; margin-top:8px; }
 
-  .toast { position:fixed; left:50%; bottom:100px; transform:translateX(-50%);
+  .toast { position:fixed; left:50%; bottom:80px; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; border-radius:8px;
     font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s; z-index:200; }
   .toast.on { opacity:.95; }
@@ -125,6 +115,11 @@
     border-radius:8px; padding:12px; font-family:ui-monospace,Consolas,monospace;
     font-size:12px; max-height:60vh; overflow:auto; white-space:pre-wrap;
     word-break:break-all; }
+
+  .loading { text-align:center; padding:80px 20px; color:var(--sub); }
+  .spin { display:inline-block; width:24px; height:24px; border:3px solid var(--line);
+    border-top-color:var(--accent); border-radius:50%; animation:s 1s linear infinite; }
+  @keyframes s { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -140,56 +135,32 @@
 <div class="chips" id="chips"></div>
 
 <main>
-  <div class="list" id="list"></div>
+  <div class="loading" id="loading"><div class="spin"></div><div style="margin-top:10px;">ブログ商品を読込中...</div></div>
+  <div id="lists"></div>
   <div class="empty" id="empty" style="display:none;">
-    <div class="em">📦</div>
-    <div>まだ商品がありません</div>
-    <div style="margin-top:6px; font-size:13px;">右下の + ボタンから追加</div>
+    <div class="em">🔍</div>
+    <div>該当なし</div>
   </div>
 </main>
 
-<button class="fab" id="add">＋</button>
-
-<!-- 追加/編集 -->
+<!-- 編集 -->
 <div class="bg" id="formBg"></div>
 <aside class="sheet" id="formSheet">
   <div class="sh-head">
     <button id="formCancel">キャンセル</button>
-    <h2 id="formTitle">商品を追加</h2>
+    <h2>店舗をつける</h2>
     <button id="formSave" style="font-weight:700;">保存</button>
   </div>
   <div class="sh-body">
-    <div class="photo" id="photoArea">
-      <span>タップして写真を撮る／選ぶ</span>
-      <input type="file" id="photoIn" accept="image/*" capture="environment">
-    </div>
-    <div class="ph-row" id="phRow" style="display:none;">
-      <button id="phRetake">📷 撮り直し</button>
-      <button id="phDel" class="del">画像を削除</button>
-    </div>
-
+    <div class="target-name" id="targetName"></div>
     <label class="f">
-      <span class="l">商品名 <span style="color:var(--warn)">*</span></span>
-      <input id="nameIn" placeholder="例: ガンダム HG ザクⅡ">
-    </label>
-
-    <label class="f">
-      <span class="l">仕入れた店舗ラベル <span style="color:var(--warn)">*</span></span>
+      <span class="l">仕入れた店舗 <span style="color:var(--warn)">*</span></span>
       <div class="store-q" id="storeQ"></div>
-      <input id="storeIn" placeholder="例: ハードオフ青山店">
+      <input id="storeIn" placeholder="店舗名（例: ハードオフ青山店）">
     </label>
+    <button class="save-btn" id="formSaveBig">保存</button>
+    <button class="clear-btn" id="formClear">店舗ラベルを外す</button>
   </div>
-</aside>
-
-<!-- 詳細 -->
-<div class="bg" id="detBg"></div>
-<aside class="sheet" id="detSheet">
-  <div class="sh-head">
-    <button id="detClose">閉じる</button>
-    <h2>詳細</h2>
-    <button id="detEdit" style="font-weight:700;">編集</button>
-  </div>
-  <div class="sh-body" id="detBody"></div>
 </aside>
 
 <!-- メニュー -->
@@ -203,19 +174,23 @@
   <div class="sh-body menu-sheet">
     <button id="showJson">
       📋 JSON 表示（Claude に貼る用）
-      <div class="d">全件を JSON で表示、コピーして Claude に渡せる</div>
+      <div class="d">商品 × 店舗ラベルを JSON で表示・コピー</div>
     </button>
     <button id="dlJson">
       💾 JSON でダウンロード
       <div class="d">バックアップ用にファイル保存</div>
     </button>
     <button id="imJson">
-      📥 JSON を読み込み
-      <div class="d">別端末のバックアップを取り込み</div>
+      📥 ラベルの取り込み
+      <div class="d">別端末のバックアップを読込</div>
     </button>
     <input type="file" id="imIn" accept=".json,application/json" style="display:none">
+    <button id="reload">
+      🔄 ブログ商品を再取得
+      <div class="d">products.json をリロード（新しい記事追加時）</div>
+    </button>
     <button id="clearAll" style="color:var(--warn); border-color:var(--warn);">
-      ⚠️ 全データを削除
+      ⚠️ 店舗ラベルを全削除
       <div class="d" style="color:var(--warn);">取り消し不可</div>
     </button>
   </div>
@@ -237,147 +212,148 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ---- IndexedDB ----
-const DB='stockLabelApp', V=2, STORE='items';
+// ---- IndexedDB (labels) ----
+const DB='stockLabelApp', V=3, STORE='labels';
 const db = new Promise((res, rej) => {
   const r = indexedDB.open(DB, V);
   r.onupgradeneeded = e => {
     const d = e.target.result;
-    if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, {keyPath:'id'});
+    if (d.objectStoreNames.contains('items')) d.deleteObjectStore('items');
+    if (d.objectStoreNames.contains('meta')) d.deleteObjectStore('meta');
+    if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, {keyPath:'productId'});
   };
   r.onsuccess = () => res(r.result);
   r.onerror = () => rej(r.error);
 });
-async function dbAll() { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readonly').objectStore(STORE).getAll();t.onsuccess=()=>rs(t.result);t.onerror=()=>rj(t.error);});}
-async function dbPut(x) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(x);t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
-async function dbDel(id) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).delete(id);t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
-async function dbClear() { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).clear();t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
+async function labelsAll() { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readonly').objectStore(STORE).getAll();t.onsuccess=()=>rs(t.result);t.onerror=()=>rj(t.error);});}
+async function labelGet(id) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readonly').objectStore(STORE).get(id);t.onsuccess=()=>rs(t.result);t.onerror=()=>rj(t.error);});}
+async function labelPut(x) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(x);t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
+async function labelDel(id) { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).delete(id);t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
+async function labelsClear() { const d=await db; return new Promise((rs,rj)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).clear();t.oncomplete=rs;t.onerror=()=>rj(t.error);});}
 
 // ---- state ----
-let state = { filter:null, q:'', editId:null, photo:null };
+let PRODUCTS = []; // from products.json
+let LABELS = new Map(); // productId -> {store, updatedAt}
+let state = { filter:'unset', q:'', editId:null };
+
 const $ = id => document.getElementById(id);
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 const DEFAULT_STORES = ['ハードオフ','ブックオフ','駿河屋','らしんばん','まんだらけ','ヤフオク','メルカリ'];
 
+// ---- load ----
+async function loadAll() {
+  const cacheBust = Date.now();
+  const res = await fetch(`products.json?_=${cacheBust}`);
+  const data = await res.json();
+  PRODUCTS = data.products || [];
+
+  const labelList = await labelsAll();
+  LABELS = new Map(labelList.map(l => [l.productId, l]));
+
+  $('loading').style.display = 'none';
+  render();
+}
+
 // ---- render ----
-async function render() {
-  const items = (await dbAll()).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
-  $('n').textContent = `(${items.length})`;
+function render() {
+  $('n').textContent = `(${LABELS.size}/${PRODUCTS.length})`;
 
-  // chips
-  const stores = [...new Set(items.map(i=>i.store).filter(Boolean))];
-  const c = $('chips'); c.innerHTML = '';
-  const all = document.createElement('button');
-  all.className = 'chip' + (state.filter==null?' on':'');
-  all.textContent = `すべて (${items.length})`;
-  all.onclick = ()=>{state.filter=null; render();};
-  c.appendChild(all);
-  for (const s of stores) {
-    const b = document.createElement('button');
-    const n = items.filter(i=>i.store===s).length;
-    b.className = 'chip' + (state.filter===s?' on':'');
-    b.textContent = `${s} (${n})`;
-    b.onclick = ()=>{state.filter = state.filter===s?null:s; render();};
-    c.appendChild(b);
+  // chip 集計
+  const storeCounts = {};
+  let unsetCount = 0;
+  for (const p of PRODUCTS) {
+    const l = LABELS.get(p.id);
+    if (!l) unsetCount++;
+    else storeCounts[l.store] = (storeCounts[l.store] || 0) + 1;
   }
+  const stores = Object.entries(storeCounts).sort((a,b) => b[1] - a[1]).map(e => e[0]);
 
-  // filter
+  const c = $('chips'); c.innerHTML = '';
+  const add = (key, label, count, extraClass = '') => {
+    const b = document.createElement('button');
+    b.className = 'chip ' + extraClass + (state.filter === key ? ' on' : '');
+    b.textContent = `${label} (${count})`;
+    b.onclick = () => { state.filter = key; render(); window.scrollTo(0,0); };
+    c.appendChild(b);
+  };
+  add('all', 'すべて', PRODUCTS.length);
+  add('unset', '未設定', unsetCount, 'unset');
+  for (const s of stores) add(`store:${s}`, s, storeCounts[s]);
+
+  // フィルタ
   const q = state.q.trim().toLowerCase();
-  const f = items.filter(it => {
-    if (state.filter && it.store !== state.filter) return false;
+  const filtered = PRODUCTS.filter(p => {
+    const l = LABELS.get(p.id);
+    if (state.filter === 'unset' && l) return false;
+    if (state.filter.startsWith('store:')) {
+      const want = state.filter.slice(6);
+      if (!l || l.store !== want) return false;
+    }
     if (!q) return true;
-    return (it.name||'').toLowerCase().includes(q) || (it.store||'').toLowerCase().includes(q);
+    return (p.name||'').toLowerCase().includes(q)
+      || (l?.store || '').toLowerCase().includes(q);
   });
 
-  const L = $('list'); L.innerHTML = '';
-  $('empty').style.display = f.length ? 'none' : 'block';
-  if (f.length === 0) {
-    if (items.length > 0) {
-      $('empty').innerHTML = '<div class="em">🔍</div><div>該当なし</div><div style="margin-top:6px; font-size:13px;">検索/フィルタを変えてみて</div>';
-    } else {
-      $('empty').innerHTML = '<div class="em">📦</div><div>まだ商品がありません</div><div style="margin-top:6px; font-size:13px;">右下の + ボタンから追加</div>';
+  $('empty').style.display = filtered.length ? 'none' : 'block';
+
+  // ページIDでグルーピング
+  const groups = new Map();
+  for (const p of filtered) {
+    const k = p.source.pageId;
+    if (!groups.has(k)) groups.set(k, { title: p.source.pageTitle, url: p.source.pageUrl, items: [] });
+    groups.get(k).items.push(p);
+  }
+
+  const L = $('lists'); L.innerHTML = '';
+  const groupKeys = [...groups.keys()].sort((a,b) => b - a);
+  for (const k of groupKeys) {
+    const g = groups.get(k);
+    const t = document.createElement('div');
+    t.className = 'group-title';
+    t.innerHTML = esc(stripTitleHtml(g.title)) + ` <span style="color:var(--sub);">(${g.items.length})</span>`;
+    L.appendChild(t);
+    const list = document.createElement('div');
+    list.className = 'list';
+    for (const p of g.items) {
+      const l = LABELS.get(p.id);
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.onclick = () => openForm(p.id);
+      row.innerHTML = `
+        <span class="badge ${l ? 'set' : 'unset'}">${l ? esc(l.store) : '未設定'}</span>
+        <div>
+          <div class="name">${esc(p.name)}</div>
+        </div>
+      `;
+      list.appendChild(row);
     }
+    L.appendChild(list);
   }
-  for (const it of f) {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.onclick = ()=>openDet(it.id);
-    const thumb = it.photo
-      ? `<img class="thumb" src="${it.photo}" alt="">`
-      : `<div class="thumb empty">No Image</div>`;
-    card.innerHTML = `${thumb}<div class="b"><div class="badge">${esc(it.store||'未設定')}</div><div class="name">${esc(it.name||'(名称未設定)')}</div></div>`;
-    L.appendChild(card);
-  }
+}
+
+function stripTitleHtml(s) {
+  return String(s || '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ');
 }
 
 // ---- sheet ----
-function open(id) {
-  $(id+'Bg').classList.add('on');
-  $(id+'Sheet').classList.add('on');
-}
-function close(id) {
-  $(id+'Bg').classList.remove('on');
-  $(id+'Sheet').classList.remove('on');
-}
-
-// ---- photo ----
-function resize(file, max=1280, q=0.82) {
-  return new Promise((rs, rj) => {
-    const r = new FileReader();
-    r.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > h && w > max) { h = h*max/w; w = max; }
-        else if (h >= w && h > max) { w = w*max/h; h = max; }
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        c.getContext('2d').drawImage(img, 0, 0, w, h);
-        rs(c.toDataURL('image/jpeg', q));
-      };
-      img.onerror = rj;
-      img.src = e.target.result;
-    };
-    r.onerror = rj;
-    r.readAsDataURL(file);
-  });
-}
-function updPhoto() {
-  const a = $('photoArea');
-  [...a.children].forEach(n => { if (n.tagName !== 'INPUT') n.remove(); });
-  if (state.photo) {
-    const img = new Image(); img.src = state.photo; a.prepend(img);
-    $('phRow').style.display = 'flex';
-  } else {
-    const sp = document.createElement('span');
-    sp.textContent = 'タップして写真を撮る／選ぶ';
-    a.prepend(sp);
-    $('phRow').style.display = 'none';
-  }
-}
-$('photoArea').onclick = e => { if (e.target.tagName !== 'BUTTON') $('photoIn').click(); };
-$('photoIn').onchange = async e => {
-  const f = e.target.files[0]; if (!f) return;
-  try { state.photo = await resize(f); updPhoto(); } catch { toast('画像読込失敗'); }
-  e.target.value = '';
-};
-$('phRetake').onclick = () => $('photoIn').click();
-$('phDel').onclick = () => { state.photo = null; updPhoto(); };
+function open(id) { $(id+'Bg').classList.add('on'); $(id+'Sheet').classList.add('on'); }
+function close(id) { $(id+'Bg').classList.remove('on'); $(id+'Sheet').classList.remove('on'); }
 
 // ---- form ----
-async function openForm(id) {
-  state.editId = id || null;
-  state.photo = null;
-  $('formTitle').textContent = id ? '編集' : '商品を追加';
+async function openForm(productId) {
+  const p = PRODUCTS.find(x => x.id === productId);
+  if (!p) return;
+  state.editId = productId;
+  const l = LABELS.get(productId);
+
+  $('targetName').innerHTML = `${esc(p.name)}<div class="target-source">出典: <a href="${esc(p.source.pageUrl)}" target="_blank" rel="noopener">${esc(stripTitleHtml(p.source.pageTitle))}</a></div>`;
 
   // 店舗履歴
-  const items = await dbAll();
-  const freq = {};
-  for (const it of items) { const s = (it.store||'').trim(); if (s) freq[s] = (freq[s]||0) + 1; }
-  const recent = Object.entries(freq).sort((a,b) => b[1]-a[1]).map(e => e[0]);
-  const stores = [...recent, ...DEFAULT_STORES.filter(s => !recent.includes(s))].slice(0, 10);
+  const storeFreq = {};
+  for (const v of LABELS.values()) storeFreq[v.store] = (storeFreq[v.store] || 0) + 1;
+  const recent = Object.entries(storeFreq).sort((a,b) => b[1]-a[1]).map(e => e[0]);
+  const stores = [...recent, ...DEFAULT_STORES.filter(s => !recent.includes(s))].slice(0, 12);
   const q = $('storeQ'); q.innerHTML = '';
   for (const s of stores) {
     const b = document.createElement('button');
@@ -391,99 +367,75 @@ async function openForm(id) {
     q.appendChild(b);
   }
 
-  if (id) {
-    const it = items.find(x => x.id === id);
-    if (it) {
-      $('nameIn').value = it.name || '';
-      $('storeIn').value = it.store || '';
-      state.photo = it.photo || null;
-      const sel = [...q.children].find(b => b.textContent === it.store);
-      if (sel) sel.classList.add('sel');
-    }
-  } else {
-    $('nameIn').value = ''; $('storeIn').value = '';
+  $('storeIn').value = l?.store || '';
+  if (l) {
+    const sel = [...q.children].find(b => b.textContent === l.store);
+    if (sel) sel.classList.add('sel');
   }
-  updPhoto();
   open('form');
+  setTimeout(() => $('storeIn').focus({ preventScroll: true }), 100);
+}
+
+async function saveLabel() {
+  const store = $('storeIn').value.trim();
+  if (!store) { toast('店舗を入力'); return; }
+  const label = { productId: state.editId, store, updatedAt: Date.now() };
+  await labelPut(label);
+  LABELS.set(state.editId, label);
+  close('form');
+  toast('保存しました');
+  render();
 }
 $('formCancel').onclick = () => close('form');
 $('formBg').onclick = () => close('form');
-$('formSave').onclick = async () => {
-  const name = $('nameIn').value.trim();
-  const store = $('storeIn').value.trim();
-  if (!name) { toast('商品名を入力'); return; }
-  if (!store) { toast('店舗を入力'); return; }
-  const now = Date.now();
-  let item;
-  if (state.editId) {
-    const items = await dbAll();
-    item = items.find(x => x.id === state.editId) || { id: state.editId, createdAt: now };
-  } else {
-    item = { id: uid(), createdAt: now };
-  }
-  item.name = name;
-  item.store = store;
-  item.photo = state.photo;
-  item.updatedAt = now;
-  await dbPut(item);
+$('formSave').onclick = saveLabel;
+$('formSaveBig').onclick = saveLabel;
+$('formClear').onclick = async () => {
+  if (!state.editId) return;
+  await labelDel(state.editId);
+  LABELS.delete(state.editId);
   close('form');
-  toast(state.editId ? '更新しました' : '追加しました');
-  state.editId = null;
+  toast('ラベルを外しました');
   render();
 };
-
-// ---- detail ----
-async function openDet(id) {
-  const items = await dbAll();
-  const it = items.find(x => x.id === id);
-  if (!it) return;
-  $('detBody').innerHTML = `
-    ${it.photo ? `<div class="det-photo"><img src="${it.photo}"></div>` : ''}
-    <div class="det-store">${esc(it.store)}</div>
-    <h3 class="det-name">${esc(it.name)}</h3>
-    <div class="det-date">追加: ${new Date(it.createdAt).toLocaleString('ja-JP')}</div>
-    <button class="del-btn" id="delThis">この商品を削除</button>
-  `;
-  $('delThis').onclick = async () => {
-    if (!confirm('削除しますか？')) return;
-    await dbDel(id);
-    close('det');
-    toast('削除しました');
-    render();
-  };
-  $('detEdit').onclick = () => { close('det'); openForm(id); };
-  open('det');
-}
-$('detClose').onclick = () => close('det');
-$('detBg').onclick = () => close('det');
 
 // ---- menu ----
 $('menuBtn').onclick = () => open('menu');
 $('menuClose').onclick = () => close('menu');
 $('menuBg').onclick = () => close('menu');
 
-$('showJson').onclick = async () => {
-  const items = (await dbAll()).map(it => ({
-    name: it.name, store: it.store,
-    createdAt: new Date(it.createdAt).toISOString(),
-    hasPhoto: !!it.photo,
-  }));
-  $('jsonView').textContent = JSON.stringify({ items }, null, 2);
+function buildExport() {
+  return {
+    exportedAt: new Date().toISOString(),
+    items: PRODUCTS.map(p => {
+      const l = LABELS.get(p.id);
+      return {
+        name: p.name,
+        store: l?.store || null,
+        labeledAt: l ? new Date(l.updatedAt).toISOString() : null,
+        source: { pageId: p.source.pageId, pageTitle: stripTitleHtml(p.source.pageTitle), pageUrl: p.source.pageUrl },
+      };
+    }),
+  };
+}
+
+$('showJson').onclick = () => {
+  const data = buildExport();
+  // 店舗未設定は除外して見やすく
+  data.items = data.items.filter(x => x.store);
+  $('jsonView').textContent = JSON.stringify(data, null, 2);
   close('menu');
   open('json');
 };
 $('jsonClose').onclick = () => close('json');
 $('jsonBg').onclick = () => close('json');
 $('jsonCopy').onclick = async () => {
-  try {
-    await navigator.clipboard.writeText($('jsonView').textContent);
-    toast('コピー完了');
-  } catch { toast('コピー失敗'); }
+  try { await navigator.clipboard.writeText($('jsonView').textContent); toast('コピー完了'); }
+  catch { toast('コピー失敗'); }
 };
 
-$('dlJson').onclick = async () => {
-  const items = await dbAll();
-  const blob = new Blob([JSON.stringify({ items }, null, 2)], { type:'application/json' });
+$('dlJson').onclick = () => {
+  const blob = new Blob([JSON.stringify(buildExport(), null, 2)], { type:'application/json' });
   const u = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = u; a.download = `stock-label-${new Date().toISOString().slice(0,10)}.json`;
@@ -500,29 +452,42 @@ $('imIn').onchange = async e => {
     const data = JSON.parse(await f.text());
     const items = Array.isArray(data) ? data : data.items;
     if (!Array.isArray(items)) throw new Error('items 配列がない');
+    let n = 0;
     for (const it of items) {
-      if (!it.id) it.id = uid();
-      if (!it.createdAt) it.createdAt = Date.now();
-      await dbPut(it);
+      if (!it.store) continue;
+      // 商品名で products.json から照合
+      const match = PRODUCTS.find(p => p.name === it.name);
+      if (!match) continue;
+      const label = { productId: match.id, store: it.store, updatedAt: Date.now() };
+      await labelPut(label);
+      LABELS.set(match.id, label);
+      n++;
     }
     close('menu');
-    toast(`${items.length}件 取り込み`);
+    toast(`${n}件 反映`);
     render();
   } catch (err) { toast('読込失敗: ' + err.message); }
   e.target.value = '';
 };
 
+$('reload').onclick = async () => {
+  $('loading').style.display = 'block';
+  $('lists').innerHTML = '';
+  close('menu');
+  try { await loadAll(); toast('再取得しました'); }
+  catch (err) { toast('再取得失敗: ' + err.message); }
+};
+
 $('clearAll').onclick = async () => {
-  if (!confirm('全データを削除します。取り消せません。続行？')) return;
-  if (!confirm('本当に？')) return;
-  await dbClear();
+  if (!confirm('店舗ラベルを全削除します。商品リストは消えません。続行？')) return;
+  await labelsClear();
+  LABELS.clear();
   close('menu');
   toast('全削除');
   render();
 };
 
 // ---- core ----
-$('add').onclick = () => openForm();
 $('q').oninput = e => { state.q = e.target.value; render(); };
 
 let tt;
@@ -535,7 +500,9 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
-render();
+loadAll().catch(err => {
+  $('loading').innerHTML = '<div style="color:var(--warn)">読込失敗: ' + esc(err.message) + '</div>';
+});
 </script>
 </body>
 </html>
