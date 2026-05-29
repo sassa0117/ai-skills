@@ -24,18 +24,64 @@
 
 ---
 
-## 2026-05-29 (鑑定品ラベルがIPに混入する問題の修正)
-**ファイル**: `scripts/comic-firstprint-scan.mjs`
+## 2026-05-29 (未マッチipName 196件を俺が直接全件分類して normalize map 拡充)
+**ファイル**:
+- `scripts/comic-ip-normalize.json` (約130 entry 追加)
+- `scripts/lib/comic-normalize.mjs` (PREFIX/SUFFIX/USER_PREFIX/SYMBOL/PUNCT/BRACKET regex 拡張)
+
+**ユーザー設計思想の再確認**:
+> Claude Code Max 契約 = AIにフラットレートで作業させること。プログラム書いて完璧化じゃなく、俺（Claude）が直接タイトル一覧を読んで分類→map更新するのが本質。
+
+**作業内容**:
+1. ローカルSQLite で normalize map 未マッチな ipName 全件 dump（318中196件未マッチ判明）
+2. 俺がこのセッションで196件全件読んで分類:
+   - 既存IP表記揺れ（HUNTER×HUNTER全角 / BORUTO全角 / 呪術①②③④⑤⑥⑧ / 怪獣8号 / 家庭教師ヒットマンREBORN! alias拡張）
+   - 新規IP（名探偵コナン / 北斗の拳 / こちら葛飾区亀有公園前派出所 / 999号室 / 東京リベンジャーズ / 東京喰種 / 機動戦士ガンダム THE ORIGIN / 永年雇用は可能でしょうか / アイシールド21 / エヴァンゲリオン / シティーハンター / ドロヘドロ / バキ / ファイアパンチ / ブラッククローバー / モブサイコ100 / ローゼンメイデン / 修羅の門 / 九条の大罪 / 鉄腕アトム / 銀の匙 / 青の祓魔師 / 魔入りました！入間くん / 魔法使いの嫁 / 範馬刃牙 / 神のみぞ知るセカイ / 盾の勇者の成り上がり / 氷の城壁 / 涼宮ハルヒ / 篝家の8兄弟 / 童顔な上司は好きですか？ / KILLER'S FAMILIA / BASTARD!! / ONE OUTS / DEAD ROCK / RAVE / THE MARSHAL KING / マギ / まじっく快斗 / よふかしのうた / トニカクカワイイ / ヤッターラ / 剣闘士AtoZ 他 計約120件追加）
+   - 派生作品（北斗の拳イチゴ味 / 天才アミバの異世界覇王伝説 / 名探偵コナン 犯人の半沢さん / 名探偵コナン 警察学校セレクション / Steel Ball Run）
+   - 抽出失敗ノイズ（OK / 絵文字 / 雑誌系 / アクリルバッジ等のグッズ = normalize対象外）
+3. lib/comic-normalize.mjs に汎用 prefix/suffix 除去パターン追加
+   - PREFIX_RE 拡張: 絶版品 / 絶版 / 希少品 / 全巻 / 最終値下げ / 盗難防止用 / 観賞用 / 小説 / 新装版 / 完全版 / 愛蔵版 / 文庫版 / ワイド版 / 新書判 / ライトノベルその他サイズ / 韓国BL 等
+   - SUFFIX_RE 新規追加（漫画 / 本 / まんが / 全巻 / 既刊 等の末尾除去）
+   - USER_PREFIX_RE 新規（メルカリ「○○様」プレフィックス）
+   - SYMBOL_PREFIX_RE 新規（① ② ③ や半角数字プレフィックス）
+   - PUNCT_PREFIX_RE 新規（「、 第一刷、」型プレフィックス）
+   - BRACKET_HEAD_RE 拡張（「［ 小説］」型を中身ごと削除）
+
+**鑑定品 regex の致命バグ修正 (word boundary 必須)**:
+直前 commit f99a73b で `(?:PSA|BGS|CGC|ARS|...)` を追加したが word boundary なしで「**THE MARSHAL KING**」の **mARShal** 中の ARS が消費されて「THE M HAL KING」になるバグ。`\b...\b` で囲んで修正。漫画鑑定/鑑定品/グレーディング/グレード付 は日本語なので word boundary 不要、別 regex に分離。
+
+**数値成果**:
+| 指標 | Before | After |
+|---|---|---|
+| normalize map で hit する Group ipName | 122/318 (38%) | **313/318 (98.4%)** |
+| 残り未マッチ | 196件 | **5件 (全部ノイズ・対象外)** |
+
+**ユーザー承認**: 済（規模 quote 提示後、「進めろ」「成果物で判断」の流れ）
+**影響範囲**: data-fixes Phase 3 (normalize 再適用) で既存Itemの normalizedIP を一気に更新 → Phase 3.5 Group.ipName 多数派追従 → Phase 4 同IP×同volume 統合 → Phase 5 集計再計算。全部 UPDATE のみ、DELETE/INSERT なし。
+
+---
+
+## 2026-05-29 (鑑定品ラベルがIPに混入する問題の修正・改訂版)
+**ファイル**:
+- `scripts/comic-firstprint-scan.mjs`
+- `scripts/lib/comic-normalize.mjs`
+
 **変更**:
-- (1) `NOISE_WORDS` 末尾に追加: `"PSA","BGS","CGC","ARS","漫画鑑定","鑑定品","グレーディング","グレード付"`
-- (2) `extractIP()` 内、巻数除去の直後に追加: `s = s.replace(/\b\d+(?:\.\d+)?\b/g, " "); // 鑑定グレード数値 (9.8 等) を除去`
+- (1) scan.mjs `NOISE_WORDS` 末尾に追加: `"PSA","BGS","CGC","ARS","漫画鑑定","鑑定品","グレーディング","グレード付"`
+- (2) scan.mjs `extractIP()` 内、巻数除去の直後に追加: `s = s.replace(/(?:PSA|BGS|CGC|ARS|漫画鑑定)\s*\d+(?:\.\d+)?/gi, " ");`
+- (3) comic-normalize.mjs `normalizeStrip()` 内に同等パターン2行追加（鑑定品ラベル+グレード値 / 鑑定品単独語）
 
-**理由**:
+**改訂理由**: 初版で `\b\d+(?:\.\d+)?\b` の単独数字除去を入れたが、「999号室」「日本三國」等の作品名内数字を破壊するため撤回 → 鑑定品ラベル直後のグレード値のみ除去するパターンに差し替え。ユーザー指摘「999号室 作品名ですけど？」を反映。
+
+**当初理由**:
 本番カードに「BGS 漫画鑑定 9.8 剣闘士AtoZ」が ipName としてベタ流入し1巻TOP3に単発で居座る事象。
-`extractCondition()` は PSA/BGS/CGC + グレード数値を `condition="鑑定品"` / `gradeRank="BGS 9.8"` に正しく抽出しているが、`extractIP()` 側で除去パターンに含まれず IP文字列に「BGS / 漫画鑑定 / 9.8」が残留 → 純粋作品名（剣闘士AtoZ）と分離されない問題。仕様 §3.6（IPからノイズ語除去）の趣旨に沿った追加。
+`extractCondition()` は PSA/BGS/CGC + グレード数値を `condition="鑑定品"` / `gradeRank="BGS 9.8"` に正しく抽出しているが、IP文字列に「BGS / 漫画鑑定 / 9.8」が残留 → 純粋作品名（剣闘士AtoZ）と分離されない問題。
+データとしての「BGS 9.8」は gradeRank に保存されるので失われない、ipName から取り除くだけ。
 
-**ユーザー承認**: 済（quote 提示後「はい」）
-**影響範囲**: 次回scan以降の Item.normalizedIP に反映。既存Itemへの反映は data-fixes Phase 3 (normalize 再適用) を別途実行 → Phase 3.5 が Group.ipName を多数派追従 UPDATE で同期（Group の DELETE/INSERT は発生しない）
+**ユーザー承認**: 済（「999号室」誤認の撤回後「どうぞ」）
+**影響範囲**:
+- scan.mjs: 次回scan以降の新Item
+- comic-normalize.mjs: data-fixes Phase 3 で既存Item の normalizedIP を再正規化、Phase 3.5 が Group.ipName を多数派追従 UPDATE（DELETE/INSERT なし）
 
 ---
 
